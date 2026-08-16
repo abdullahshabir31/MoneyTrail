@@ -13,19 +13,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  FREQUENCIES,
-  PAYMENT_METHODS,
-  formatDate,
-  formatMoney,
-  nextOccurrence,
-  todayISO,
-} from "@/lib/finance";
+import { FREQUENCIES, formatDate, formatMoney, nextOccurrence, todayISO } from "@/lib/finance";
 import {
   useCategories,
   useDeleteRow,
   useInsertRow,
   useItems,
+  usePaymentMethods,
   useProfile,
   useRecurringTransactions,
   useSaveTransaction,
@@ -39,6 +33,7 @@ export default function RecurringPage() {
   const { data: recurring = [] } = useRecurringTransactions();
   const { data: categories = [] } = useCategories();
   const { data: items = [] } = useItems();
+  const { data: paymentMethods = [] } = usePaymentMethods();
   const { data: profile } = useProfile();
   const insert = useInsertRow("recurring_transactions", ["recurring_transactions"]);
   const update = useUpdateRow("recurring_transactions", ["recurring_transactions"]);
@@ -198,11 +193,13 @@ export default function RecurringPage() {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {PAYMENT_METHODS.map((m) => (
-                  <SelectItem key={m} value={m}>
-                    {m}
-                  </SelectItem>
-                ))}
+                {paymentMethods
+                  .filter((m) => m.is_active !== false)
+                  .map((m) => (
+                    <SelectItem key={m.id} value={m.name}>
+                      {m.name}
+                    </SelectItem>
+                  ))}
               </SelectContent>
             </Select>
           </div>
