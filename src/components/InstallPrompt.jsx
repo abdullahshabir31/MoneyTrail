@@ -26,6 +26,10 @@ function dismissedThisVisit() {
  * appears there; there's no reliable programmatic install prompt to trigger
  * on iOS anyway.
  */
+// How long to wait, after the page has fully loaded, before the banner
+// slides in — so it doesn't compete with the initial page render.
+const SHOW_DELAY_MS = 3500;
+
 export function InstallPrompt() {
   const [deferredEvent, setDeferredEvent] = useState(null);
   const [visible, setVisible] = useState(false);
@@ -33,10 +37,35 @@ export function InstallPrompt() {
   useEffect(() => {
     if (isStandalone() || dismissedThisVisit()) return;
 
+    let showTimer = null;
+    let pendingEvent = null;
+
+    const scheduleShow = () => {
+      if (showTimer) return; // already scheduled
+      const reveal = () => {
+        // Re-check: user may have dismissed or the app may have been
+        // installed while we were waiting.
+        if (isStandalone() || dismissedThisVisit()) return;
+        setDeferredEvent(pendingEvent);
+        setVisible(true);
+      };
+      if (document.readyState === "complete") {
+        showTimer = window.setTimeout(reveal, SHOW_DELAY_MS);
+      } else {
+        window.addEventListener(
+          "load",
+          () => {
+            showTimer = window.setTimeout(reveal, SHOW_DELAY_MS);
+          },
+          { once: true },
+        );
+      }
+    };
+
     const onBeforeInstall = (e) => {
       e.preventDefault();
-      setDeferredEvent(e);
-      setVisible(true);
+      pendingEvent = e;
+      scheduleShow();
     };
     const onInstalled = () => {
       setVisible(false);
@@ -48,6 +77,7 @@ export function InstallPrompt() {
     return () => {
       window.removeEventListener("beforeinstallprompt", onBeforeInstall);
       window.removeEventListener("appinstalled", onInstalled);
+      if (showTimer) window.clearTimeout(showTimer);
     };
   }, []);
 
@@ -73,7 +103,7 @@ export function InstallPrompt() {
 
   return (
     <div className="fixed inset-x-0 bottom-0 z-50 flex justify-center px-4 pb-[calc(env(safe-area-inset-bottom)+1rem)] pt-4">
-      <div className="surface relative flex w-full max-w-md items-center gap-3 border border-border p-4 shadow-[var(--shadow-float)]">
+      <div className="surface animate-in fade-in slide-in-from-bottom-6 relative flex w-full max-w-md items-center gap-3 border border-border p-4 shadow-[var(--shadow-float)] duration-500 ease-out">
         <span className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground">
           <Wallet className="size-5" />
         </span>
