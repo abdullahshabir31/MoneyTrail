@@ -220,8 +220,8 @@ export default function AuthPage() {
             <h2 className="text-xl font-semibold text-foreground">Check your email</h2>
             <p className="mt-2 text-sm text-muted-foreground">
               We sent a confirmation link to{" "}
-              <span className="font-medium text-foreground">{confirmationEmail}</span>. Click it
-              to activate your account, then come back and sign in.
+              <span className="font-medium text-foreground">{confirmationEmail}</span>. Click it to
+              activate your account, then come back and sign in.
             </p>
             <Button
               variant="outline"
@@ -280,8 +280,8 @@ export default function AuthPage() {
             <h2 className="text-xl font-semibold text-foreground">Check your email</h2>
             <p className="mt-2 text-sm text-muted-foreground">
               We sent a password reset link to{" "}
-              <span className="font-medium text-foreground">{resetEmail}</span>. Open it to
-              choose a new password.
+              <span className="font-medium text-foreground">{resetEmail}</span>. Open it to choose a
+              new password.
             </p>
             <Button
               variant="outline"
