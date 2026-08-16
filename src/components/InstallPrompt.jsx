@@ -2,8 +2,7 @@ import { useEffect, useState } from "react";
 import { Download, X, Wallet } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-const DISMISS_KEY = "mt-install-dismissed-at";
-const DISMISS_COOLDOWN_MS = 7 * 24 * 60 * 60 * 1000; // don't nag again for a week
+const DISMISS_KEY = "mt-install-dismissed";
 
 function isStandalone() {
   if (typeof window === "undefined") return false;
@@ -13,10 +12,11 @@ function isStandalone() {
   );
 }
 
-function recentlyDismissed() {
-  const raw = window.localStorage.getItem(DISMISS_KEY);
-  if (!raw) return false;
-  return Date.now() - Number(raw) < DISMISS_COOLDOWN_MS;
+function dismissedThisVisit() {
+  // sessionStorage clears when the tab/browser closes, so "maybe later"
+  // only hides the banner for the rest of this visit — closing and
+  // reopening the site brings it back, as requested.
+  return window.sessionStorage.getItem(DISMISS_KEY) === "1";
 }
 
 /**
@@ -31,7 +31,7 @@ export function InstallPrompt() {
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
-    if (isStandalone() || recentlyDismissed()) return;
+    if (isStandalone() || dismissedThisVisit()) return;
 
     const onBeforeInstall = (e) => {
       e.preventDefault();
@@ -52,7 +52,7 @@ export function InstallPrompt() {
   }, []);
 
   const dismiss = () => {
-    window.localStorage.setItem(DISMISS_KEY, String(Date.now()));
+    window.sessionStorage.setItem(DISMISS_KEY, "1");
     setVisible(false);
   };
 
@@ -61,8 +61,9 @@ export function InstallPrompt() {
     deferredEvent.prompt();
     const { outcome } = await deferredEvent.userChoice;
     if (outcome !== "accepted") {
-      // They saw the native prompt and said no — treat like "maybe later".
-      window.localStorage.setItem(DISMISS_KEY, String(Date.now()));
+      // They saw the native prompt and said no — treat like "maybe later"
+      // for the rest of this visit only.
+      window.sessionStorage.setItem(DISMISS_KEY, "1");
     }
     setDeferredEvent(null);
     setVisible(false);
