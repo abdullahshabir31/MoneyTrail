@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import { Download, LogOut, Moon, Sun, Trash2, Tags, Plus, Wallet } from "lucide-react";
+import { Download, LogOut, Moon, Sun, Trash2, Plus, Wallet, KeyRound } from "lucide-react";
 import { PageHeader } from "@/components/Bits";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -48,6 +48,10 @@ export default function SettingsPage() {
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
   const [newMethod, setNewMethod] = useState("");
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmNewPassword, setConfirmNewPassword] = useState("");
+  const [changingPassword, setChangingPassword] = useState(false);
 
   useEffect(() => {
     if (profile) {
@@ -136,6 +140,45 @@ export default function SettingsPage() {
     deletePaymentMethod.mutate(id, { onSuccess: () => toast.success("Payment method removed") });
   };
 
+  const changePassword = async () => {
+    if (!currentPassword) {
+      toast.error("Enter your current password");
+      return;
+    }
+    if (newPassword.length < 6) {
+      toast.error("New password must be at least 6 characters");
+      return;
+    }
+    if (newPassword !== confirmNewPassword) {
+      toast.error("New passwords don't match");
+      return;
+    }
+    setChangingPassword(true);
+    try {
+      // Confirm the current password by re-authenticating with it before
+      // allowing the change.
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email: user?.email ?? "",
+        password: currentPassword,
+      });
+      if (signInError) {
+        toast.error("Current password is incorrect");
+        return;
+      }
+      const { error } = await supabase.auth.updateUser({ password: newPassword });
+      if (error) {
+        toast.error(error.message);
+        return;
+      }
+      toast.success("Password changed");
+      setCurrentPassword("");
+      setNewPassword("");
+      setConfirmNewPassword("");
+    } finally {
+      setChangingPassword(false);
+    }
+  };
+
   const destroy = async () => {
     if (!window.confirm("Delete your account and all financial data? This cannot be undone."))
       return;
@@ -217,17 +260,6 @@ export default function SettingsPage() {
         />
       </Section>
 
-      <Section title="Categories & items">
-        <p className="text-sm text-muted-foreground">
-          Manage your categories and reusable items like Pasta, Petrol or Netflix.
-        </p>
-        <Button variant="outline" asChild>
-          <Link to="/categories">
-            <Tags className="size-4" /> Open categories
-          </Link>
-        </Button>
-      </Section>
-
       <Section title="Payment methods">
         <p className="text-sm text-muted-foreground">
           These are only visible to you — add your own (e.g. a specific bank or wallet) alongside
@@ -295,6 +327,47 @@ export default function SettingsPage() {
           {transactions.length} transactions stored
           {transactions[0] ? ` · latest ${formatDate(transactions[0].date)}` : ""}
         </p>
+      </Section>
+
+      <Section title="Change password">
+        <div className="grid gap-3 sm:max-w-sm">
+          <div className="grid gap-1.5">
+            <Label htmlFor="current-password">Current password</Label>
+            <Input
+              id="current-password"
+              type="password"
+              autoComplete="current-password"
+              value={currentPassword}
+              onChange={(e) => setCurrentPassword(e.target.value)}
+              className="h-11"
+            />
+          </div>
+          <div className="grid gap-1.5">
+            <Label htmlFor="new-password">New password</Label>
+            <Input
+              id="new-password"
+              type="password"
+              autoComplete="new-password"
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+              className="h-11"
+            />
+          </div>
+          <div className="grid gap-1.5">
+            <Label htmlFor="confirm-new-password">Confirm new password</Label>
+            <Input
+              id="confirm-new-password"
+              type="password"
+              autoComplete="new-password"
+              value={confirmNewPassword}
+              onChange={(e) => setConfirmNewPassword(e.target.value)}
+              className="h-11"
+            />
+          </div>
+        </div>
+        <Button onClick={changePassword} disabled={changingPassword}>
+          <KeyRound className="size-4" /> Change password
+        </Button>
       </Section>
 
       <Section title="Account">
