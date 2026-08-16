@@ -57,7 +57,13 @@ export function nextOccurrence(date, frequency) {
   else if (frequency === "weekly") d.setDate(d.getDate() + 7);
   else if (frequency === "yearly") d.setFullYear(d.getFullYear() + 1);
   else d.setMonth(d.getMonth() + 1);
-  return d.toISOString().slice(0, 10);
+  // Build the ISO string from local date parts, not `d.toISOString()` — that
+  // converts to UTC first, which rolls the date back a day for any
+  // timezone ahead of UTC (e.g. Pakistan, +5h) once the local time is
+  // midnight. Same class of bug as the one already fixed in todayISO().
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(
+    d.getDate(),
+  ).padStart(2, "0")}`;
 }
 export const CHART_COLORS = [
   "var(--color-chart-1)",
