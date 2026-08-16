@@ -1,46 +1,48 @@
-# 💰 MoneyTrail — Personal Finance & Expense Tracker
+# 💰 MoneyTrail — Personal Finance Tracker
 
-**MoneyTrail** is a modern personal finance management web application built with **React, Vite, JavaScript, Tailwind CSS, and Supabase**.
+**MoneyTrail** is a modern personal finance tracking Progressive Web App (PWA) built with **React, Vite, JavaScript, Tailwind CSS, and Supabase**.
 
-It allows users to manage their personal finances by tracking income and expenses, creating budgets, managing recurring transactions, and analyzing their financial activity through interactive dashboards and charts.
+It allows users to securely manage their personal finances by tracking income and expenses, organizing transactions into categories and subcategories, setting monthly budgets, managing recurring transactions, analyzing spending patterns, and exporting financial data.
 
 ---
 
 ## 🌐 Live Demo
 
-**MoneyTrail:** Coming Soon
+**MoneyTrail:** https://moneytrail-tracker.vercel.app/
 
 ---
 
 ## 📖 About
 
-MoneyTrail is a modern personal finance tracker designed to help users manage their income, expenses, budgets, and recurring financial activities in one place.
+MoneyTrail is a personal finance management application designed to make tracking everyday finances simple and organized.
 
-The application provides a personalized financial dashboard where authenticated users can:
+Authenticated users can:
 
 - Track income and expenses
-- Add, edit, and delete transactions
-- Organize transactions using categories and items
-- Create and manage monthly budgets
-- Monitor recurring transactions
-- Analyze financial activity through charts
-- Manage custom categories and items
-- Configure account preferences
-- Switch between Light and Dark mode
-- Securely manage their account and personal financial data
+- Organize transactions using categories and subcategories
+- Add and manage payment methods
+- Set monthly budgets
+- Manage recurring transactions
+- Analyze income, expenses, and savings
+- View spending insights
+- Export financial data
+- Generate printable financial reports
+- Manage their profile and preferences
+- Sign in using email/password or Google
+- Install the application as a PWA
 
-**Supabase** provides authentication and PostgreSQL database functionality, while **React and Vite** power the frontend application.
+User data is securely stored using **Supabase PostgreSQL**, with **Row Level Security (RLS)** protecting user-specific data.
 
 ---
 
 # 🌐 Deployment
 
-| Service        | Platform                | Status      |
-| -------------- | ----------------------- | ----------- |
-| Frontend       | Vercel                  | Coming Soon |
-| Database       | Supabase                | Supabase    |
-| Authentication | Supabase Auth           | Supabase    |
-| Backend Logic  | Supabase Edge Functions | Supabase    |
+| Service           | Platform                | URL                                    |
+| ----------------- | ----------------------- | -------------------------------------- |
+| Frontend          | Vercel                  | https://moneytrail-tracker.vercel.app/ |
+| Database          | Supabase                | Supabase PostgreSQL                    |
+| Authentication    | Supabase Auth           | Supabase                               |
+| Backend Functions | Supabase Edge Functions | Supabase                               |
 
 ---
 
@@ -53,18 +55,13 @@ The application provides a personalized financial dashboard where authenticated 
 - JSX
 - Vite
 - React Router DOM
-- Tailwind CSS v4
-- Radix UI
+- Tailwind CSS
 - shadcn/ui
+- Radix UI
 - Lucide React
 - Recharts
-- Sonner
-
-## Forms & Validation
-
 - React Hook Form
 - Zod
-- @hookform/resolvers
 
 ## Backend & Database
 
@@ -74,207 +71,297 @@ The application provides a personalized financial dashboard where authenticated 
 - Supabase Edge Functions
 - Row Level Security (RLS)
 
-## Development Tools
+## PWA
 
-- ESLint
-- Prettier
-- Vite
+- Progressive Web App (PWA)
+- Service Worker
+- Web App Manifest
+- Installable application
+- Offline-ready architecture
+
+## Deployment
+
+- Vercel
 
 ---
 
 # ✨ Features
 
-## 💰 Income & Expense Tracking
+## 🔐 Authentication
 
-- Add income transactions
-- Add expense transactions
-- Edit existing transactions
-- Delete transactions
-- Transaction descriptions
-- Transaction notes
-- Transaction dates
-- Payment method tracking
-- Category and item organization
-- Automatic transaction totals
+- Email & Password Sign Up
+- Email & Password Sign In
+- Google OAuth / Continue with Google
+- Remember Me functionality
+- Persistent login using local storage
+- Session-only login using session storage
+- Forgot Password flow
+- Email-based password reset
+- Change password from Settings
+- Automatic authentication-based redirects
+- Protected application routes
+- Secure logout
+- Delete account functionality
 
-## 📊 Financial Dashboard
+### Account Deletion
 
-- Overview of personal finances
-- Total income
-- Total expenses
-- Current balance
-- Financial activity overview
+Users can permanently delete their account and associated data through a secure **Supabase Edge Function**.
+
+---
+
+## 🏠 Dashboard
+
+The dashboard provides a quick overview of the user's current financial situation.
+
+- Monthly Income
+- Monthly Expenses
+- Current Balance
+- Income vs. Expense bar chart
+- Monthly balance trend
+- Expense breakdown by category
 - Recent transactions
-- Financial summaries
-- Quick transaction creation
+- Quick-add transaction button
 
-## 🧾 Transactions
+---
 
-- Dedicated transactions page
-- View all financial transactions
-- Sort transactions by date
-- Track income and expenses separately
-- Category-based transaction organization
-- Item-level transaction organization
-- Payment method tracking
-- Transaction notes and descriptions
+## 💳 Transactions
 
-## 💳 Categories & Items
+MoneyTrail provides a complete transaction management system.
 
-MoneyTrail provides a flexible category system for organizing financial activity.
+### Transaction Management
 
-### Expense Categories
+- Add transactions
+- Edit transactions
+- Delete transactions
+- Search transactions
+- View transaction history
+- Income and expense support
 
-- Food
-- Groceries
-- Transport
-- Shopping
-- Bills
-- Utilities
-- Entertainment
-- Health
-- Education
-- Rent
-- Travel
-- Subscriptions
-- Other
+### Transaction Filters
 
-### Income Categories
+- Income / Expense
+- Category
+- Payment method
+- Date range
+- Sorting order
 
-- Salary
-- Freelance
-- Business
-- Gift
-- Investment
-- Other
+### Transaction Information
 
-Users can also create their own custom categories and items.
+Each transaction can contain:
 
-## 📅 Budget Management
+- Amount
+- Transaction type
+- Date
+- Category
+- Subcategory / Item
+- Payment method
+- Description
+- Optional note
 
-- Create monthly budgets
-- Assign budgets to categories
-- Track category spending
-- Monitor budget usage
-- Update existing budgets
+---
+
+## ➕ Add & Edit Transactions
+
+Transactions can be created and edited through a reusable transaction dialog available throughout the application.
+
+Features include:
+
+- Income / Expense toggle
+- Amount entry
+- Date picker
+- Category selection
+- Subcategory / Item selection
+- Payment method selection
+- Create new category directly from the dialog
+- Create new payment method directly from the dialog
+- Recent item suggestions based on usage
+- Optional description
+- Optional notes
+
+---
+
+## 💰 Budgets
+
+MoneyTrail allows users to create monthly budgets for expense categories.
+
+- Set monthly budget per category
+- Expense-based budget tracking
+- Current month spending progress
+- Visual progress bars
+- Previous / next month navigation
 - Delete budgets
-- Prevent duplicate budgets for the same category and month
+- Compare spending against budget limits
+
+---
+
+## 🗂️ Categories & Subcategories
+
+MoneyTrail provides flexible category management.
+
+Users can:
+
+- Create income categories
+- Create expense categories
+- Create subcategories/items
+- Rename categories
+- Rename subcategories/items
+- Archive categories
+- Unarchive categories
+- Archive items
+- Unarchive items
+- Delete categories
+- Delete items
+
+Categories and subcategories are used throughout the transaction system.
+
+---
 
 ## 🔁 Recurring Transactions
 
-- Create recurring financial transactions
-- Support recurring income and expenses
-- Configure transaction frequency
-- Set next transaction date
-- Track payment methods
-- Add notes
-- Enable or disable recurring transactions
-- Manage existing recurring transactions
+Users can create transactions that automatically repeat according to a schedule.
 
-## 📈 Financial Analytics
+Supported frequencies:
 
-MoneyTrail provides visual financial analytics using **Recharts**.
+- Daily
+- Weekly
+- Monthly
+- Yearly
 
-Analytics include:
+Features include:
 
-- Income analysis
-- Expense analysis
-- Spending breakdown
-- Category-based financial data
-- Financial trends
-- Interactive charts
-- Visual financial summaries
+- Create recurring transaction rules
+- Automatically calculate next occurrence
+- Enable / disable recurring rules
+- Mark recurring transaction as completed
+- Convert completed recurring transaction into a real transaction
+- Automatically move the next occurrence date forward
+- Delete recurring rules
 
-## 🏷️ Category Management
+---
 
-- Create custom categories
-- Separate income and expense categories
-- Create custom items
-- Activate or deactivate categories
-- Activate or deactivate items
-- Track item usage
-- Track last-used items
-- Default category and item support
+## 📊 Analytics
 
-## 👤 User Account
+MoneyTrail provides a dedicated analytics section for understanding financial activity.
 
-- Secure user authentication
-- Personalized financial data
-- User-specific profile
+- Month-by-month navigation
+- Income statistics
+- Expense statistics
+- Savings statistics
+- Income vs. expense charts
+- Expense breakdown by category
+- Spending insights
+- Top spending categories
+
+---
+
+## ⚙️ Settings
+
+Users can manage their account and application preferences from Settings.
+
+### Profile
+
 - Display name
-- Currency preference
-- Notification preferences
-- Theme preferences
-- Account settings
+- Currency selection
 
-## 🌓 Theme Support
+Supported currencies:
+
+- PKR
+- USD
+- EUR
+- GBP
+- AED
+- INR
+- SAR
+
+### Appearance
 
 - Light mode
 - Dark mode
-- Theme persistence
-- Responsive theme controls
-- Desktop and mobile theme switching
 
-## 📱 Responsive Design
+### Payment Methods
 
-MoneyTrail is designed for both desktop and mobile devices.
+Users can:
+
+- Add payment methods
+- Manage existing payment methods
+- Use payment methods while creating transactions
+
+### Data Export
+
+Users can export their financial data as:
+
+- CSV
+- Printable PDF report
+
+Export options include:
+
+- All transactions
+- Current month
+- Custom date range
+
+### Account
+
+- Change password
+- Log out
+- Delete account
+
+---
+
+# 📱 Progressive Web App
+
+MoneyTrail is built as an installable **Progressive Web App (PWA)**.
+
+Features include:
+
+- Installable on supported devices
+- Web App Manifest
+- Service Worker
+- Offline-ready architecture
+- Custom application icons
+- Responsive mobile experience
+- Custom install prompt
+
+MoneyTrail can be used like a native application after installation on supported devices.
+
+---
+
+# 📱 Responsive Design
+
+The application is designed for both desktop and mobile devices.
 
 ### Desktop
 
 - Sidebar navigation
 - Full dashboard layout
-- Quick transaction actions
-- Financial management tools
+- Responsive charts and tables
+- Desktop-friendly transaction management
 
 ### Mobile
 
-- Mobile navigation
-- Bottom navigation bar
-- Floating Add Transaction button
-- Mobile-friendly menus
-- Responsive layouts
-- Touch-friendly interface
-
-## 🔐 Authentication
-
-MoneyTrail uses **Supabase Authentication** to securely manage user accounts and sessions.
-
-Authentication is integrated with protected application routes so that personal financial information remains accessible only to authenticated users.
-
-## 🗑️ Account Deletion
-
-MoneyTrail includes secure account deletion functionality.
-
-Because the Supabase Service Role Key must never be exposed inside a client-side application, account deletion is handled through a **Supabase Edge Function**.
-
-The Edge Function:
-
-1. Validates the authenticated user's session
-2. Retrieves the authenticated user's ID
-3. Uses the Supabase Service Role client
-4. Permanently deletes the user's account
-5. Removes related user data through PostgreSQL cascading rules
+- Mobile bottom navigation
+- More menu sheet
+- Responsive transaction interface
+- Mobile-friendly dialogs
+- Responsive charts and cards
 
 ---
 
 # 🔐 Authentication & Security
 
-MoneyTrail uses **Supabase Authentication** and **PostgreSQL Row Level Security (RLS)** to protect user data.
+MoneyTrail uses **Supabase Authentication** for secure user authentication and session management.
 
-Each user's financial information is associated with their authenticated user ID.
+Supported authentication methods include:
 
-Database policies ensure that authenticated users can only access and manage their own:
+- Email & Password
+- Google OAuth
 
-- Profile
-- Categories
-- Items
-- Transactions
-- Budgets
-- Recurring transactions
+User-specific database access is protected through **PostgreSQL Row Level Security (RLS)**.
 
-Sensitive configuration is handled through environment variables and excluded from version control.
+This ensures users can only access and manage their own financial data.
 
-The Supabase Service Role Key is never included in the client-side application.
+Sensitive credentials are stored using environment variables and are excluded from version control.
+
+Account deletion is handled through a secure server-side **Supabase Edge Function**.
 
 ---
 
@@ -282,88 +369,17 @@ The Supabase Service Role Key is never included in the client-side application.
 
 MoneyTrail uses **PostgreSQL through Supabase**.
 
-The database contains the following main tables:
+The database manages application data including:
 
-### Profiles
+- User profiles
+- Categories
+- Subcategories / Items
+- Transactions
+- Budgets
+- Recurring transactions
+- Payment methods
 
-Stores user-specific profile and preference information.
-
-- Display name
-- Currency
-- Theme
-- Budget notifications
-- Recurring transaction notifications
-
-### Categories
-
-Stores income and expense categories.
-
-### Items
-
-Stores individual items belonging to categories.
-
-### Transactions
-
-Stores financial transactions including:
-
-- Income
-- Expenses
-- Amount
-- Date
-- Category
-- Item
-- Description
-- Note
-- Payment method
-
-### Budgets
-
-Stores monthly category-based budgets.
-
-### Recurring Transactions
-
-Stores recurring income and expense information including:
-
-- Amount
-- Category
-- Item
-- Frequency
-- Next date
-- Payment method
-- Notes
-- Active status
-
----
-
-# 🛡️ Row Level Security
-
-All user-specific database tables use **PostgreSQL Row Level Security (RLS)**.
-
-The database policies ensure that users can only access records associated with their authenticated account.
-
-The application uses the authenticated user's ID to securely associate data with their account.
-
----
-
-# ⚡ Supabase Edge Function
-
-MoneyTrail includes a Supabase Edge Function for secure account deletion.
-
-### Function
-
-```text
-supabase/functions/delete-account/
-```
-
-The function validates the user's authentication token before using the Supabase Service Role Key to permanently delete the account.
-
-Deploy the function using:
-
-```bash
-supabase functions deploy delete-account
-```
-
-The Service Role Key must remain on the Supabase server and should never be exposed to the frontend.
+The database uses **Row Level Security (RLS)** to protect user-specific information.
 
 ---
 
@@ -376,64 +392,20 @@ MoneyTrail/
 │
 ├── src/
 │   ├── components/
-│   │   ├── ui/
-│   │   └── ...
-│   │
-│   ├── hooks/
-│   │   ├── useAuth.jsx
-│   │   ├── useDataQuery.js
-│   │   ├── useFinance.js
-│   │   ├── useTheme.js
-│   │   └── ...
-│   │
-│   ├── integrations/
-│   │   └── supabase/
-│   │       ├── client.js
-│   │       └── types.js
-│   │
-│   ├── layouts/
-│   │   └── ProtectedLayout.jsx
-│   │
-│   ├── lib/
-│   │   ├── finance.js
-│   │   ├── errorReporting.js
-│   │   └── utils.js
-│   │
 │   ├── pages/
-│   │   ├── AnalyticsPage.jsx
-│   │   ├── AuthPage.jsx
-│   │   ├── BudgetsPage.jsx
-│   │   ├── CategoriesPage.jsx
-│   │   ├── DashboardPage.jsx
-│   │   ├── RecurringPage.jsx
-│   │   ├── SettingsPage.jsx
-│   │   ├── TransactionsPage.jsx
-│   │   └── ...
-│   │
-│   ├── services/
-│   │   └── accountService.js
-│   │
-│   ├── App.jsx
-│   ├── main.jsx
-│   └── index.css
+│   ├── lib/
+│   ├── hooks/
+│   └── ...
 │
 ├── supabase/
 │   ├── functions/
-│   │   └── delete-account/
-│   │       └── index.ts
-│   │
-│   ├── migrations/
-│   │   └── *.sql
-│   │
-│   └── config.toml
+│   └── migrations/
 │
 ├── .env.example
 ├── .gitignore
-├── eslint.config.js
-├── index.html
-├── jsconfig.json
 ├── package.json
 ├── vite.config.js
+├── vercel.json
 └── README.md
 ```
 
@@ -458,14 +430,16 @@ npm install
 
 Create a `.env` file using `.env.example` as a reference.
 
-Required environment variables:
+Example:
 
 ```env
-VITE_SUPABASE_URL="https://your-project-id.supabase.co"
-VITE_SUPABASE_PUBLISHABLE_KEY="your-supabase-publishable-key"
+VITE_SUPABASE_URL=
+VITE_SUPABASE_PUBLISHABLE_KEY=
 ```
 
-> ⚠️ Never commit your `.env` file or expose your Supabase Service Role Key.
+Additional Supabase Edge Function secrets should be configured securely through Supabase and should **not** be exposed in the frontend environment.
+
+> ⚠️ Never commit your `.env` file or expose sensitive Supabase server-side credentials.
 
 ## 4. Start Development Server
 
@@ -483,7 +457,7 @@ http://localhost:5173
 
 # 🏗️ Build
 
-To create a production build:
+Create a production build with:
 
 ```bash
 npm run build
@@ -497,159 +471,129 @@ npm run preview
 
 ---
 
-# 🧹 Linting
+# 🚀 Deployment
 
-Run ESLint:
+MoneyTrail is deployed using **Vercel**.
 
-```bash
-npm run lint
-```
+The production application is available at:
 
----
+https://moneytrail-tracker.vercel.app/
 
-# ✨ Formatting
-
-Format the project using Prettier:
-
-```bash
-npm run format
-```
+The project uses a Vercel SPA rewrite configuration so React Router routes work correctly when accessed directly.
 
 ---
 
 # 🔒 Security
 
-MoneyTrail follows secure configuration practices by keeping sensitive credentials inside environment variables.
+MoneyTrail follows secure configuration practices.
 
-The following credentials should never be committed to the repository:
+Sensitive credentials should never be committed to the repository, including:
 
 - Supabase Service Role Key
-- Supabase private credentials
-- Database credentials
-- Private environment variables
+- Supabase server-side credentials
+- Private Edge Function secrets
+- Other private environment variables
 
-The `.env` file is excluded from version control through `.gitignore`.
+The `.env` file is excluded from version control using `.gitignore`.
 
-Database access is additionally protected through **Row Level Security (RLS)**.
-
-Account deletion is handled through a Supabase Edge Function so privileged credentials never reach the browser.
+Database access is additionally protected using **Row Level Security (RLS)**.
 
 ---
 
 # 🏗️ Architecture
 
 ```text
-                     React Application
-                            │
-                            ▼
-                     React Router DOM
-                            │
-                            ▼
-                       Vite Build
-                            │
-                            ▼
-                      Frontend UI
-                            │
-              ┌─────────────┴─────────────┐
-              │                           │
-              ▼                           ▼
-       Supabase Client              React Components
-              │                           │
-              ▼                           ▼
-       Supabase Auth              Financial Features
-              │                           │
-              │                ┌──────────┼──────────┐
-              │                │          │          │
-              ▼                ▼          ▼          ▼
-        Authenticated       Dashboard  Budgets  Analytics
-           User
-              │
-              ▼
-        PostgreSQL
-              │
-      ┌───────┼────────┬──────────────┐
-      │       │        │              │
-      ▼       ▼        ▼              ▼
-  Profiles Categories Transactions  Budgets
+                         React + Vite
+                              │
+                              │
+                         React Router
+                              │
+                              ▼
+                        MoneyTrail UI
+                              │
+                ┌─────────────┴─────────────┐
+                │                           │
+                ▼                           ▼
+        Supabase Client              Recharts / UI
+                │
+                │
+        ┌───────┴───────────────────────┐
+        │                               │
+        ▼                               ▼
+  Supabase Auth                    PostgreSQL
+        │                               │
+        │                               ▼
+        │                        Row Level Security
+        │                               │
+        ▼                               ▼
+   User Sessions                 User Financial Data
+                                        │
+                    ┌───────────────────┼──────────────────┐
+                    │                   │                  │
+                    ▼                   ▼                  ▼
+               Transactions          Budgets          Recurring
+                    │
+                    ▼
+              Categories /
+              Subcategories /
+              Payment Methods
+
                          │
                          ▼
-                 Recurring Transactions
-              │
-              ▼
-      Row Level Security
-              │
-              ▼
-       User-specific Data
+                 Supabase Edge Functions
+                         │
+                         ▼
+                 Secure Server Operations
 
 
-             Account Deletion
-                    │
-                    ▼
-          Supabase Edge Function
-                    │
-                    ▼
-        Service Role Authentication
-                    │
-                    ▼
-          Supabase Auth Admin API
-                    │
-                    ▼
-             Account Deletion
+                         React + Vite
+                              │
+                              ▼
+                           Vercel
 ```
 
 ---
 
 # 📊 Project Highlights
 
-- Modern React 19 Application
+- Modern React 19 application
 - JavaScript + JSX
 - Vite-powered development and build system
 - React Router DOM
-- Tailwind CSS v4
-- shadcn/ui
-- Radix UI
-- Supabase Backend Infrastructure
-- PostgreSQL Database
+- Tailwind CSS
+- shadcn/ui and Radix UI
+- Recharts analytics
+- React Hook Form + Zod
+- Supabase backend infrastructure
+- PostgreSQL database
 - Supabase Authentication
+- Google OAuth
 - Row Level Security
 - Supabase Edge Functions
-- Personal Finance Dashboard
-- Income & Expense Tracking
-- Monthly Budget Management
-- Recurring Transactions
-- Category Management
-- Custom Financial Items
-- Financial Analytics
-- Recharts Data Visualization
-- Light & Dark Mode
-- Responsive Mobile Design
-- Protected Routes
-- Secure Account Deletion
-- Environment-based Configuration
+- Personal finance tracking
+- Income and expense management
+- Category and subcategory management
+- Monthly budgets
+- Recurring transactions
+- Financial analytics
+- Spending insights
+- CSV data export
+- Printable PDF reports
+- Installable PWA
+- Responsive mobile and desktop interface
+- Light and dark themes
+- Secure account deletion
+- Production deployment on Vercel
 
 ---
 
-# 🚀 Project Status
+# 🚀 Live Project
 
-MoneyTrail is actively being developed as a personal finance management platform.
+### 💰 MoneyTrail
 
-Current core functionality includes:
+**Live Application:**
 
-- Authentication
-- Dashboard
-- Transactions
-- Categories
-- Budgets
-- Recurring Transactions
-- Analytics
-- Settings
-- Supabase database integration
-- Row Level Security
-- Account deletion through Edge Functions
-
----
-
-# 🚀 Project Repository
+https://moneytrail-tracker.vercel.app/
 
 **GitHub Repository:**
 
@@ -671,8 +615,8 @@ https://github.com/abdullahshabir31/MoneyTrail
 
 ## ⭐ Support
 
-If you found MoneyTrail interesting or useful, consider giving the repository a ⭐ on GitHub.
+If you found MoneyTrail useful or interesting, consider giving the repository a ⭐ on GitHub.
 
 ---
 
-**MoneyTrail — Your personal finance, expense tracking, budgeting, and financial analytics platform.**
+**MoneyTrail — Track your money. Understand your spending. Take control of your finances.**
