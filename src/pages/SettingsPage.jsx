@@ -285,18 +285,26 @@ export default function SettingsPage() {
             </span>
           ))}
         </div>
-        <div className="flex gap-2">
+        <form
+          className="flex gap-2"
+          autoComplete="off"
+          onSubmit={(e) => {
+            e.preventDefault();
+            addMethod();
+          }}
+        >
           <Input
+            name="payment-method-name"
             placeholder="e.g. Meezan Bank"
             value={newMethod}
             onChange={(e) => setNewMethod(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && addMethod()}
+            autoComplete="off"
             className="h-11"
           />
-          <Button className="h-11" onClick={addMethod}>
+          <Button type="submit" className="h-11">
             <Plus className="size-4" /> Add
           </Button>
-        </div>
+        </form>
       </Section>
 
       <Section title="Export data">
@@ -330,44 +338,62 @@ export default function SettingsPage() {
       </Section>
 
       <Section title="Change password">
-        <div className="grid gap-3 sm:max-w-sm">
-          <div className="grid gap-1.5">
-            <Label htmlFor="current-password">Current password</Label>
-            <Input
-              id="current-password"
-              type="password"
-              autoComplete="current-password"
-              value={currentPassword}
-              onChange={(e) => setCurrentPassword(e.target.value)}
-              className="h-11"
-            />
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            changePassword();
+          }}
+        >
+          {/* Hidden username hint so Chrome's password-manager heuristic has a
+              field to associate with this form instead of guessing one from
+              elsewhere on the page. */}
+          <input
+            type="text"
+            name="email"
+            autoComplete="username"
+            value=""
+            readOnly
+            hidden
+          />
+          <div className="grid gap-3 sm:max-w-sm">
+            <div className="grid gap-1.5">
+              <Label htmlFor="current-password">Current password</Label>
+              <Input
+                id="current-password"
+                type="password"
+                autoComplete="current-password"
+                value={currentPassword}
+                onChange={(e) => setCurrentPassword(e.target.value)}
+                className="h-11"
+              />
+            </div>
+            <div className="grid gap-1.5">
+              <Label htmlFor="new-password">New password</Label>
+              <Input
+                id="new-password"
+                type="password"
+                autoComplete="new-password"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                className="h-11"
+              />
+            </div>
+            <div className="grid gap-1.5">
+              <Label htmlFor="confirm-new-password">Confirm new password</Label>
+              <Input
+                id="confirm-new-password"
+                type="password"
+                autoComplete="new-password"
+                value={confirmNewPassword}
+                onChange={(e) => setConfirmNewPassword(e.target.value)}
+                className="h-11"
+              />
+            </div>
           </div>
-          <div className="grid gap-1.5">
-            <Label htmlFor="new-password">New password</Label>
-            <Input
-              id="new-password"
-              type="password"
-              autoComplete="new-password"
-              value={newPassword}
-              onChange={(e) => setNewPassword(e.target.value)}
-              className="h-11"
-            />
-          </div>
-          <div className="grid gap-1.5">
-            <Label htmlFor="confirm-new-password">Confirm new password</Label>
-            <Input
-              id="confirm-new-password"
-              type="password"
-              autoComplete="new-password"
-              value={confirmNewPassword}
-              onChange={(e) => setConfirmNewPassword(e.target.value)}
-              className="h-11"
-            />
-          </div>
-        </div>
-        <Button onClick={changePassword} disabled={changingPassword}>
-          <KeyRound className="size-4" /> Change password
-        </Button>
+          <Button type="submit" disabled={changingPassword}>
+            <KeyRound className="size-4" /> Change password
+          </Button>
+        </form>
       </Section>
 
       <Section title="Account">
