@@ -111,8 +111,7 @@ export default function ResetPasswordPage() {
             </span>
             <h2 className="text-xl font-semibold text-foreground">Link expired or invalid</h2>
             <p className="mt-2 text-sm text-muted-foreground">
-              This password reset link is no longer valid. Request a new one from the sign-in
-              page.
+              This password reset link is no longer valid. Request a new one from the sign-in page.
             </p>
             <Button className="mt-6 h-12 w-full" onClick={() => navigate("/auth")}>
               Back to sign in
