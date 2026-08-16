@@ -35,6 +35,17 @@ const tooltipStyle = {
   color: "var(--color-popover-foreground)",
 };
 
+// recharts' <Tooltip> only themes its outer box via `contentStyle` — the
+// label and the per-series item text each carry their own inline color
+// (black by default) via `labelStyle` / `itemStyle`, which is why in dark
+// mode the box turned dark but the text inside stayed dark-on-dark.
+const tooltipLabelStyle = {
+  color: "var(--color-popover-foreground)",
+};
+const tooltipItemStyle = {
+  color: "var(--color-popover-foreground)",
+};
+
 export default function AnalyticsPage() {
   useDocumentTitle("Insights & Analytics — MoneyTrail");
 
@@ -194,6 +205,8 @@ export default function AnalyticsPage() {
                   <Tooltip
                     formatter={(v) => formatMoney(v, currency)}
                     contentStyle={tooltipStyle}
+                    labelStyle={tooltipLabelStyle}
+                    itemStyle={tooltipItemStyle}
                   />
                   <Legend wrapperStyle={{ fontSize: 12 }} />
                 </PieChart>
@@ -210,6 +223,9 @@ export default function AnalyticsPage() {
                   <Tooltip
                     formatter={(v) => formatMoney(v, currency)}
                     contentStyle={tooltipStyle}
+                    labelStyle={tooltipLabelStyle}
+                    itemStyle={tooltipItemStyle}
+                    cursor={{ fill: "var(--color-muted)" }}
                   />
                   <Bar dataKey="Expense" fill="var(--color-chart-2)" radius={[6, 6, 0, 0]} />
                 </BarChart>
