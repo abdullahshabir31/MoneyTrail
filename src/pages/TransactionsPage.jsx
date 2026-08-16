@@ -108,7 +108,7 @@ export default function TransactionsPage() {
             className="h-11 pl-9"
           />
         </div>
-        <div className="grid grid-cols-2 gap-2 lg:grid-cols-6">
+        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-6">
           <Filter value={type} onChange={setType} placeholder="Type">
             <SelectItem value="all">All types</SelectItem>
             <SelectItem value="income">Income</SelectItem>
@@ -138,9 +138,14 @@ export default function TransactionsPage() {
             type="date"
             value={from}
             onChange={(e) => setFrom(e.target.value)}
-            className="h-11"
+            className="h-11 min-w-0"
           />
-          <Input type="date" value={to} onChange={(e) => setTo(e.target.value)} className="h-11" />
+          <Input
+            type="date"
+            value={to}
+            onChange={(e) => setTo(e.target.value)}
+            className="h-11 min-w-0"
+          />
         </div>
       </div>
 
