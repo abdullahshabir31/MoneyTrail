@@ -12,6 +12,7 @@ import {
   Wallet,
   Moon,
   Sun,
+  LogOut,
 } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
@@ -20,6 +21,7 @@ import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/s
 import { AddTransactionDialog } from "@/components/AddTransactionDialog";
 import { SiteFooter } from "@/components/Bits";
 import { useTheme } from "@/hooks/useTheme";
+import { signOut } from "@/hooks/useAuth";
 
 const NAV = [
   { to: "/dashboard", label: "Home", icon: LayoutDashboard },
@@ -77,6 +79,14 @@ export function AppShell({ children }) {
             {theme === "dark" ? <Sun className="size-4" /> : <Moon className="size-4" />}
             {theme === "dark" ? "Light mode" : "Dark mode"}
           </Button>
+          <Button
+            variant="ghost"
+            className="w-full justify-start text-destructive hover:text-destructive"
+            onClick={() => signOut()}
+          >
+            <LogOut className="size-4" />
+            Log out
+          </Button>
         </div>
       </aside>
 
@@ -128,7 +138,7 @@ export function AppShell({ children }) {
             </SheetTrigger>
             <SheetContent side="bottom" className="rounded-t-3xl">
               <SheetTitle className="px-1 pb-2">More</SheetTitle>
-              <div className="grid grid-cols-2 gap-2 pb-6">
+              <div className="grid grid-cols-2 gap-2">
                 {NAV.slice(3).map((item) => (
                   <Link
                     key={item.to}
@@ -140,6 +150,20 @@ export function AppShell({ children }) {
                     {item.label}
                   </Link>
                 ))}
+              </div>
+              <div className="mt-2 space-y-2 border-t border-border pb-[calc(env(safe-area-inset-bottom)+1rem)] pt-4">
+                <Button variant="ghost" className="w-full justify-start" onClick={toggle}>
+                  {theme === "dark" ? <Sun className="size-4" /> : <Moon className="size-4" />}
+                  {theme === "dark" ? "Light mode" : "Dark mode"}
+                </Button>
+                <Button
+                  variant="ghost"
+                  className="w-full justify-start text-destructive hover:text-destructive"
+                  onClick={() => signOut()}
+                >
+                  <LogOut className="size-4" />
+                  Log out
+                </Button>
               </div>
             </SheetContent>
           </Sheet>
