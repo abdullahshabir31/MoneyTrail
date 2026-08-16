@@ -88,9 +88,11 @@ export default function AnalyticsPage() {
   }, [monthExpenses, items]);
 
   const biggest = [...monthExpenses].sort((a, b) => b.amount - a.amount)[0];
+  const todayLocal = new Date();
+  const todayYearMonth = `${todayLocal.getFullYear()}-${String(todayLocal.getMonth() + 1).padStart(2, "0")}`;
   const daysElapsed =
-    new Date().toISOString().slice(0, 7) === month.slice(0, 7)
-      ? new Date().getDate()
+    todayYearMonth === month.slice(0, 7)
+      ? todayLocal.getDate()
       : new Date(Number(month.slice(0, 4)), Number(month.slice(5, 7)), 0).getDate();
   const avgDaily = expenses / Math.max(1, daysElapsed);
   const monthsSpan = useMemo(() => {
