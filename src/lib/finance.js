@@ -1,12 +1,3 @@
-export const PAYMENT_METHODS = [
-  "Cash",
-  "Debit Card",
-  "Credit Card",
-  "Bank Transfer",
-  "Easypaisa",
-  "JazzCash",
-  "Other",
-];
 export const FREQUENCIES = ["daily", "weekly", "monthly", "yearly"];
 export const CURRENCIES = [
   { code: "PKR", symbol: "Rs." },
@@ -29,7 +20,10 @@ export function formatMoney(value, currency = "PKR") {
   return `${value < 0 ? "-" : ""}${currencySymbol(currency)} ${formatted}`;
 }
 export function todayISO() {
-  return new Date().toISOString().slice(0, 10);
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(
+    d.getDate(),
+  ).padStart(2, "0")}`;
 }
 export function monthStart(d) {
   const date = typeof d === "string" ? new Date(`${d}T00:00:00`) : d;
