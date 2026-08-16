@@ -1,9 +1,11 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { Toaster } from "@/components/ui/sonner";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { InstallPrompt } from "@/components/InstallPrompt";
 import ProtectedLayout from "@/layouts/ProtectedLayout";
 import RootRedirect from "@/pages/RootRedirect";
 import AuthPage from "@/pages/AuthPage";
+import ResetPasswordPage from "@/pages/ResetPasswordPage";
 import DashboardPage from "@/pages/DashboardPage";
 import TransactionsPage from "@/pages/TransactionsPage";
 import BudgetsPage from "@/pages/BudgetsPage";
@@ -20,6 +22,7 @@ export default function App() {
         <Routes>
           <Route path="/" element={<RootRedirect />} />
           <Route path="/auth" element={<AuthPage />} />
+          <Route path="/reset-password" element={<ResetPasswordPage />} />
 
           <Route element={<ProtectedLayout />}>
             <Route path="/dashboard" element={<DashboardPage />} />
@@ -35,6 +38,7 @@ export default function App() {
         </Routes>
       </BrowserRouter>
       <Toaster position="top-center" richColors />
+      <InstallPrompt />
     </ErrorBoundary>
   );
 }
