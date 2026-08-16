@@ -177,3 +177,12 @@
   border-radius: var(--radius-xl);
   box-shadow: var(--shadow-card);
 }
+
+/* Native <input type="date"> renders its own calendar icon that ignores
+   `color`/`fill`. It defaults to a dark glyph, which reads fine on the
+   light theme's white fields but disappears against dark theme fields
+   (also dark). Invert it to white whenever the app is in dark mode. */
+.dark input[type="date"]::-webkit-calendar-picker-indicator,
+.dark input[type="time"]::-webkit-calendar-picker-indicator {
+  filter: invert(1) brightness(1.6);
+}
