@@ -28,3 +28,17 @@ export async function deleteAccount() {
 
   if (error) throw error;
 }
+
+/**
+ * Checks whether an account exists for the given email. Used by the
+ * "Forgot password" screen — see supabase/functions/check-email/index.ts.
+ * Called before the user has a session, so no auth header is sent (the
+ * function is deployed with --no-verify-jwt).
+ */
+export async function checkEmailExists(email) {
+  const { data, error } = await supabase.functions.invoke("check-email", {
+    body: { email },
+  });
+  if (error) throw error;
+  return Boolean(data?.exists);
+}
