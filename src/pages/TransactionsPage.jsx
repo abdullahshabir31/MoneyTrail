@@ -12,11 +12,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { formatDate, formatMoney, PAYMENT_METHODS } from "@/lib/finance";
+import { formatDate, formatMoney } from "@/lib/finance";
 import {
   useCategories,
   useDeleteTransaction,
   useItems,
+  usePaymentMethods,
   useProfile,
   useTransactions,
 } from "@/hooks/useFinance";
@@ -28,6 +29,7 @@ export default function TransactionsPage() {
   const { data: transactions = [] } = useTransactions();
   const { data: categories = [] } = useCategories();
   const { data: items = [] } = useItems();
+  const { data: paymentMethods = [] } = usePaymentMethods();
   const { data: profile } = useProfile();
   const del = useDeleteTransaction();
   const currency = profile?.currency ?? "PKR";
@@ -122,9 +124,9 @@ export default function TransactionsPage() {
           </Filter>
           <Filter value={method} onChange={setMethod} placeholder="Payment">
             <SelectItem value="all">All methods</SelectItem>
-            {PAYMENT_METHODS.map((m) => (
-              <SelectItem key={m} value={m}>
-                {m}
+            {paymentMethods.map((m) => (
+              <SelectItem key={m.id} value={m.name}>
+                {m.name}
               </SelectItem>
             ))}
           </Filter>
