@@ -171,6 +171,7 @@ export function AddTransactionDialog({
                 setCategoryId("");
                 setItemId("");
                 setNewCategory(null);
+                setNewItem(null);
               }}
               className={cn(
                 "rounded-lg py-2.5 text-sm font-semibold capitalize transition-colors",
@@ -213,7 +214,13 @@ export function AddTransactionDialog({
           <div className="grid gap-2">
             <Label>Payment method</Label>
             <div className="flex gap-2">
-              <Select value={method} onValueChange={setMethod}>
+              <Select
+                value={method}
+                onValueChange={(v) => {
+                  setMethod(v);
+                  setNewMethod(null);
+                }}
+              >
                 <SelectTrigger className="h-11 w-full">
                   <SelectValue />
                 </SelectTrigger>
@@ -266,6 +273,8 @@ export function AddTransactionDialog({
                 onClick={() => {
                   setCategoryId(c.id);
                   setItemId("");
+                  setNewCategory(null);
+                  setNewItem(null);
                 }}
                 className={cn(
                   "rounded-full border border-border px-3.5 py-2 text-sm font-medium transition-colors",
@@ -279,7 +288,10 @@ export function AddTransactionDialog({
             ))}
             <button
               type="button"
-              onClick={() => setNewCategory(newCategory === null ? "" : null)}
+              onClick={() => {
+                setNewCategory(newCategory === null ? "" : null);
+                setNewItem(null);
+              }}
               className="flex items-center gap-1 rounded-full border border-dashed border-border px-3.5 py-2 text-sm text-muted-foreground hover:bg-accent"
             >
               <Plus className="size-3.5" /> Add New
@@ -313,7 +325,10 @@ export function AddTransactionDialog({
                     key={i.id}
                     label={i.name}
                     active={itemId === i.id}
-                    onClick={() => setItemId(i.id)}
+                    onClick={() => {
+                      setItemId(i.id);
+                      setNewItem(null);
+                    }}
                   />
                 ))}
               </div>
@@ -324,7 +339,10 @@ export function AddTransactionDialog({
                   key={i.id}
                   label={i.name}
                   active={itemId === i.id}
-                  onClick={() => setItemId(itemId === i.id ? "" : i.id)}
+                  onClick={() => {
+                    setItemId(itemId === i.id ? "" : i.id);
+                    setNewItem(null);
+                  }}
                 />
               ))}
               <button
