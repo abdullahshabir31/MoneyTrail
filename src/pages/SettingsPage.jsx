@@ -324,9 +324,14 @@ export default function SettingsPage() {
             type="date"
             value={from}
             onChange={(e) => setFrom(e.target.value)}
-            className="h-11"
+            className="h-11 min-w-0"
           />
-          <Input type="date" value={to} onChange={(e) => setTo(e.target.value)} className="h-11" />
+          <Input
+            type="date"
+            value={to}
+            onChange={(e) => setTo(e.target.value)}
+            className="h-11 min-w-0"
+          />
           <Button className="h-11" onClick={() => exportCsv("range")}>
             Export range
           </Button>
@@ -347,14 +352,7 @@ export default function SettingsPage() {
           {/* Hidden username hint so Chrome's password-manager heuristic has a
               field to associate with this form instead of guessing one from
               elsewhere on the page. */}
-          <input
-            type="text"
-            name="email"
-            autoComplete="username"
-            value=""
-            readOnly
-            hidden
-          />
+          <input type="text" name="email" autoComplete="username" value="" readOnly hidden />
           <div className="grid gap-3 sm:max-w-sm">
             <div className="grid gap-1.5">
               <Label htmlFor="current-password">Current password</Label>
