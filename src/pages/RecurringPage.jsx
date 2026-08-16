@@ -177,13 +177,13 @@ export default function RecurringPage() {
               </SelectContent>
             </Select>
           </div>
-          <div className="grid gap-1.5">
+          <div className="grid min-w-0 gap-1.5">
             <Label>Next date</Label>
             <Input
               type="date"
               value={nextDate}
               onChange={(e) => setNextDate(e.target.value)}
-              className="h-11"
+              className="h-11 min-w-0"
             />
           </div>
           <div className="grid gap-1.5">
