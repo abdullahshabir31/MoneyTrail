@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import { Download, LogOut, Moon, Sun, Trash2, Tags } from "lucide-react";
+import { Download, LogOut, Moon, Sun, Trash2, Tags, Plus, Wallet } from "lucide-react";
 import { PageHeader } from "@/components/Bits";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,7 +18,15 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth, signOut } from "@/hooks/useAuth";
 import { useTheme } from "@/hooks/useTheme";
 import { CURRENCIES, formatDate, monthLabel, currentMonth } from "@/lib/finance";
-import { useCategories, useItems, useProfile, useTransactions } from "@/hooks/useFinance";
+import {
+  useAddPaymentMethod,
+  useCategories,
+  useDeleteRow,
+  useItems,
+  usePaymentMethods,
+  useProfile,
+  useTransactions,
+} from "@/hooks/useFinance";
 import { deleteAccount } from "@/services/accountService";
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 
@@ -32,10 +40,14 @@ export default function SettingsPage() {
   const { data: transactions = [] } = useTransactions();
   const { data: categories = [] } = useCategories();
   const { data: items = [] } = useItems();
+  const { data: paymentMethods = [] } = usePaymentMethods();
+  const addPaymentMethod = useAddPaymentMethod();
+  const deletePaymentMethod = useDeleteRow("payment_methods", ["payment_methods"]);
   const [name, setName] = useState("");
   const [currency, setCurrency] = useState("PKR");
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
+  const [newMethod, setNewMethod] = useState("");
 
   useEffect(() => {
     if (profile) {
@@ -107,6 +119,22 @@ export default function SettingsPage() {
   };
 
   const printReport = () => window.print();
+
+  const addMethod = async () => {
+    const value = newMethod.trim();
+    if (!value) return;
+    try {
+      await addPaymentMethod.mutateAsync({ name: value });
+      setNewMethod("");
+      toast.success(`"${value}" added`);
+    } catch {
+      toast.error("That payment method already exists");
+    }
+  };
+
+  const removeMethod = (id) => {
+    deletePaymentMethod.mutate(id, { onSuccess: () => toast.success("Payment method removed") });
+  };
 
   const destroy = async () => {
     if (!window.confirm("Delete your account and all financial data? This cannot be undone."))
@@ -198,6 +226,45 @@ export default function SettingsPage() {
             <Tags className="size-4" /> Open categories
           </Link>
         </Button>
+      </Section>
+
+      <Section title="Payment methods">
+        <p className="text-sm text-muted-foreground">
+          These are only visible to you — add your own (e.g. a specific bank or wallet) alongside
+          the defaults.
+        </p>
+        <div className="flex flex-wrap gap-2">
+          {paymentMethods.map((m) => (
+            <span
+              key={m.id}
+              className="group flex items-center gap-1.5 rounded-full border border-border px-3 py-1.5 text-sm"
+            >
+              <Wallet className="size-3.5 text-muted-foreground" />
+              {m.name}
+              {!m.is_default ? (
+                <button
+                  onClick={() => removeMethod(m.id)}
+                  className="text-muted-foreground hover:text-destructive"
+                  aria-label={`Remove ${m.name}`}
+                >
+                  <Trash2 className="size-3" />
+                </button>
+              ) : null}
+            </span>
+          ))}
+        </div>
+        <div className="flex gap-2">
+          <Input
+            placeholder="e.g. Meezan Bank"
+            value={newMethod}
+            onChange={(e) => setNewMethod(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && addMethod()}
+            className="h-11"
+          />
+          <Button className="h-11" onClick={addMethod}>
+            <Plus className="size-4" /> Add
+          </Button>
+        </div>
       </Section>
 
       <Section title="Export data">
