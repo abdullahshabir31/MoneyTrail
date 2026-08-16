@@ -38,3 +38,19 @@ export function PageHeader({ title, subtitle, action }) {
     </div>
   );
 }
+
+export function SiteFooter({ className }) {
+  return (
+    <footer className={cn("mt-8 border-t border-border pt-5 text-center text-xs text-muted-foreground", className)}>
+      <div className="mb-2 flex items-center justify-center gap-4">
+        <a href="/auth" className="hover:text-foreground hover:underline">
+          Login
+        </a>
+        <a href="/dashboard" className="hover:text-foreground hover:underline">
+          Dashboard
+        </a>
+      </div>
+      <p>© 2026 Abdullah. All rights reserved.</p>
+    </footer>
+  );
+}
