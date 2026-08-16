@@ -96,7 +96,12 @@ export default function DashboardPage() {
     const days = Array.from({ length: 14 }, (_, i) => {
       const d = new Date();
       d.setDate(d.getDate() - (13 - i));
-      return d.toISOString().slice(0, 10);
+      // Local date parts, not `toISOString()` (UTC) — see todayISO() in
+      // lib/finance.js. Using UTC here made "today" (and nearby days) miss
+      // their transactions for hours after local midnight in Pakistan.
+      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(
+        d.getDate(),
+      ).padStart(2, "0")}`;
     });
     return days.map((d) => ({
       name: d.slice(8),
@@ -201,6 +206,9 @@ export default function DashboardPage() {
                   <Tooltip
                     formatter={(v) => formatMoney(v, currency)}
                     contentStyle={tooltipStyle}
+                    labelStyle={tooltipLabelStyle}
+                    itemStyle={tooltipItemStyle}
+                    cursor={{ fill: "var(--color-muted)" }}
                   />
                   <Legend wrapperStyle={{ fontSize: 12 }} />
                   <Bar dataKey="Income" fill="var(--color-income)" radius={[6, 6, 0, 0]} />
@@ -232,6 +240,8 @@ export default function DashboardPage() {
                     <Tooltip
                       formatter={(v) => formatMoney(v, currency)}
                       contentStyle={tooltipStyle}
+                      labelStyle={tooltipLabelStyle}
+                      itemStyle={tooltipItemStyle}
                     />
                     <Legend wrapperStyle={{ fontSize: 12 }} />
                   </PieChart>
@@ -246,7 +256,13 @@ export default function DashboardPage() {
                 <CartesianGrid vertical={false} stroke="var(--color-border)" />
                 <XAxis dataKey="name" tickLine={false} axisLine={false} fontSize={12} />
                 <YAxis tickLine={false} axisLine={false} fontSize={11} width={60} />
-                <Tooltip formatter={(v) => formatMoney(v, currency)} contentStyle={tooltipStyle} />
+                <Tooltip
+                  formatter={(v) => formatMoney(v, currency)}
+                  contentStyle={tooltipStyle}
+                  labelStyle={tooltipLabelStyle}
+                  itemStyle={tooltipItemStyle}
+                  cursor={{ stroke: "var(--color-border)" }}
+                />
                 <Line
                   type="monotone"
                   dataKey="Spent"
@@ -304,6 +320,17 @@ export const tooltipStyle = {
   border: "1px solid var(--color-border)",
   borderRadius: 12,
   fontSize: 12,
+  color: "var(--color-popover-foreground)",
+};
+
+// recharts only themes the tooltip's outer box via `contentStyle` — the
+// label and per-series item text carry their own inline (black-by-default)
+// color via `labelStyle` / `itemStyle`, so in dark mode the box went dark
+// while the text inside stayed dark-on-dark. Same fix as AnalyticsPage.
+export const tooltipLabelStyle = {
+  color: "var(--color-popover-foreground)",
+};
+export const tooltipItemStyle = {
   color: "var(--color-popover-foreground)",
 };
 
