@@ -47,6 +47,7 @@ export default function DashboardPage() {
   const { data: profile } = useProfile();
   const currency = profile?.currency ?? "PKR";
   const month = currentMonth();
+  const firstName = profile?.display_name?.trim().split(/\s+/)[0] ?? "";
 
   const stats = useMemo(() => {
     const income = transactions.filter((t) => t.type === "income");
@@ -110,7 +111,7 @@ export default function DashboardPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title={`Hi${profile?.display_name ? `, ${profile.display_name.split(" ")[0]}` : ""} 👋`}
+        title={firstName ? `Hi ${firstName}` : "Hi there"}
         subtitle={`Here's your money for ${monthLabel(month)}`}
         action={
           <div className="hidden gap-2 lg:flex">
