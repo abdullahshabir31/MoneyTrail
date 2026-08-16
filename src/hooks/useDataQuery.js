@@ -66,7 +66,20 @@ export function useDataQuery(key, queryFn) {
   queryFnRef.current = queryFn;
 
   useEffect(() => {
-    const rerender = () => setTick((t) => t + 1);
+    // `emit(key)` fires this for every mounted subscriber of `key` — both
+    // when a fetch finishes AND when invalidateQueries() clears the cache
+    // entry. Without re-fetching here, an invalidated key would just sit
+    // empty until the component unmounts/remounts (e.g. navigating away and
+    // back, or a full page refresh), which is why adding/removing data
+    // anywhere in the app previously required a manual refresh to show up
+    // elsewhere. Re-running the fetch whenever we notice the entry is gone
+    // makes every screen sharing this key update itself immediately.
+    const rerender = () => {
+      if (!store.has(key)) {
+        runFetch(key, queryFnRef.current);
+      }
+      setTick((t) => t + 1);
+    };
     getSubscribers(key).add(rerender);
     if (!store.has(key)) {
       runFetch(key, queryFnRef.current);
