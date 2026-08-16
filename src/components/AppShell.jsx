@@ -18,6 +18,7 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet";
 import { AddTransactionDialog } from "@/components/AddTransactionDialog";
+import { SiteFooter } from "@/components/Bits";
 import { useTheme } from "@/hooks/useTheme";
 
 const NAV = [
@@ -94,6 +95,7 @@ export function AppShell({ children }) {
 
         <main className="mx-auto w-full max-w-6xl px-4 pb-28 pt-4 sm:px-6 lg:pb-10 lg:pt-8">
           {children}
+          <SiteFooter className="lg:mb-0" />
         </main>
       </div>
 
