@@ -20,8 +20,16 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
-import { PAYMENT_METHODS, todayISO } from "@/lib/finance";
-import { useAddItem, useCategories, useItems, useSaveTransaction } from "@/hooks/useFinance";
+import { todayISO } from "@/lib/finance";
+import {
+  useAddCategory,
+  useAddItem,
+  useAddPaymentMethod,
+  useCategories,
+  useItems,
+  usePaymentMethods,
+  useSaveTransaction,
+} from "@/hooks/useFinance";
 export function AddTransactionDialog({
   trigger,
   defaultType = "expense",
@@ -34,8 +42,11 @@ export function AddTransactionDialog({
   const setOpen = onOpenChange ?? setUncontrolled;
   const { data: categories = [] } = useCategories();
   const { data: items = [] } = useItems();
+  const { data: paymentMethods = [] } = usePaymentMethods();
   const save = useSaveTransaction();
   const addItem = useAddItem();
+  const addCategory = useAddCategory();
+  const addPaymentMethod = useAddPaymentMethod();
   const [type, setType] = useState(transaction?.type ?? defaultType);
   const [amount, setAmount] = useState(transaction ? String(transaction.amount) : "");
   const [date, setDate] = useState(transaction?.date ?? todayISO());
@@ -45,6 +56,8 @@ export function AddTransactionDialog({
   const [description, setDescription] = useState(transaction?.description ?? "");
   const [note, setNote] = useState(transaction?.note ?? "");
   const [newItem, setNewItem] = useState(null);
+  const [newCategory, setNewCategory] = useState(null);
+  const [newMethod, setNewMethod] = useState(null);
   useEffect(() => {
     if (!open) return;
     setType(transaction?.type ?? defaultType);
@@ -56,6 +69,8 @@ export function AddTransactionDialog({
     setDescription(transaction?.description ?? "");
     setNote(transaction?.note ?? "");
     setNewItem(null);
+    setNewCategory(null);
+    setNewMethod(null);
   }, [open, defaultType, transaction]);
   const visibleCategories = useMemo(
     () => categories.filter((c) => c.type === type && c.is_active),
@@ -83,6 +98,31 @@ export function AddTransactionDialog({
       toast.success(`"${name}" added`);
     } catch {
       toast.error("Could not add that item — it may already exist.");
+    }
+  };
+  const handleAddCategory = async () => {
+    const name = (newCategory ?? "").trim();
+    if (!name) return;
+    try {
+      const created = await addCategory.mutateAsync({ name, type });
+      setCategoryId(created.id);
+      setItemId("");
+      setNewCategory(null);
+      toast.success(`"${name}" added`);
+    } catch {
+      toast.error("Could not add that category — it may already exist.");
+    }
+  };
+  const handleAddMethod = async () => {
+    const name = (newMethod ?? "").trim();
+    if (!name) return;
+    try {
+      const created = await addPaymentMethod.mutateAsync({ name });
+      setMethod(created.name);
+      setNewMethod(null);
+      toast.success(`"${name}" added`);
+    } catch {
+      toast.error("Could not add that payment method — it may already exist.");
     }
   };
   const submit = async () => {
@@ -130,6 +170,7 @@ export function AddTransactionDialog({
                 setType(t);
                 setCategoryId("");
                 setItemId("");
+                setNewCategory(null);
               }}
               className={cn(
                 "rounded-lg py-2.5 text-sm font-semibold capitalize transition-colors",
@@ -171,18 +212,47 @@ export function AddTransactionDialog({
           </div>
           <div className="grid gap-2">
             <Label>Payment method</Label>
-            <Select value={method} onValueChange={setMethod}>
-              <SelectTrigger className="h-11 w-full">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {PAYMENT_METHODS.map((m) => (
-                  <SelectItem key={m} value={m}>
-                    {m}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <div className="flex gap-2">
+              <Select value={method} onValueChange={setMethod}>
+                <SelectTrigger className="h-11 w-full">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {paymentMethods
+                    .filter((m) => m.is_active !== false)
+                    .map((m) => (
+                      <SelectItem key={m.id} value={m.name}>
+                        {m.name}
+                      </SelectItem>
+                    ))}
+                </SelectContent>
+              </Select>
+              <Button
+                type="button"
+                size="icon"
+                variant="outline"
+                className="h-11 w-11 shrink-0"
+                onClick={() => setNewMethod(newMethod === null ? "" : null)}
+                aria-label="Add payment method"
+              >
+                <Plus className="size-4" />
+              </Button>
+            </div>
+            {newMethod !== null ? (
+              <div className="flex gap-2">
+                <Input
+                  autoFocus
+                  placeholder="e.g. Meezan Bank"
+                  value={newMethod}
+                  onChange={(e) => setNewMethod(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && handleAddMethod()}
+                  className="h-11"
+                />
+                <Button type="button" onClick={handleAddMethod} className="h-11">
+                  <Check className="size-4" /> Save
+                </Button>
+              </div>
+            ) : null}
           </div>
         </div>
 
@@ -207,7 +277,29 @@ export function AddTransactionDialog({
                 {c.name}
               </button>
             ))}
+            <button
+              type="button"
+              onClick={() => setNewCategory(newCategory === null ? "" : null)}
+              className="flex items-center gap-1 rounded-full border border-dashed border-border px-3.5 py-2 text-sm text-muted-foreground hover:bg-accent"
+            >
+              <Plus className="size-3.5" /> Add New
+            </button>
           </div>
+          {newCategory !== null ? (
+            <div className="flex gap-2">
+              <Input
+                autoFocus
+                placeholder="Enter category name"
+                value={newCategory}
+                onChange={(e) => setNewCategory(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleAddCategory()}
+                className="h-11"
+              />
+              <Button type="button" onClick={handleAddCategory} className="h-11">
+                <Check className="size-4" /> Save
+              </Button>
+            </div>
+          ) : null}
         </div>
 
         {categoryId ? (
