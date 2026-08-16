@@ -1,18 +1,29 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import { Wallet, ArrowRight, MailCheck } from "lucide-react";
+import { Wallet, ArrowRight, MailCheck, KeyRound, ArrowLeft } from "lucide-react";
 import {
   supabase,
   getRememberMePreference,
   setRememberMePreference,
 } from "@/integrations/supabase/client";
+import { checkEmailExists } from "@/services/accountService";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { SiteFooter } from "@/components/Bits";
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
+
+// Which card is shown inside the auth shell. "auth" is the normal
+// sign-in/sign-up tabs; the others are full-card takeovers.
+const SCREEN = {
+  AUTH: "auth",
+  CONFIRM_SIGNUP: "confirmSignup",
+  FORGOT_FORM: "forgotForm",
+  FORGOT_SENT: "forgotSent",
+};
 
 export default function AuthPage() {
   useDocumentTitle("Sign in — MoneyTrail Personal Finance Tracker");
@@ -25,10 +36,18 @@ export default function AuthPage() {
   const [loading, setLoading] = useState(false);
   const [rememberMe, setRememberMe] = useState(() => getRememberMePreference());
 
-  // Once sign-up succeeds and Supabase requires email confirmation, we swap
-  // the whole card for a "check your email" screen instead of a toast.
-  const [awaitingConfirmation, setAwaitingConfirmation] = useState(false);
+  const [screen, setScreen] = useState(SCREEN.AUTH);
+
+  // Sign-up "check your email" screen state.
   const [confirmationEmail, setConfirmationEmail] = useState("");
+
+  // Forgot-password screen state (kept separate from the sign-in email
+  // field so switching screens never clobbers what the user typed).
+  const [resetEmail, setResetEmail] = useState("");
+  const [resetLoading, setResetLoading] = useState(false);
+
+  // Shared 30-second resend cooldown, reused by both the sign-up
+  // confirmation resend and the password-reset resend.
   const [resendCooldown, setResendCooldown] = useState(0);
   const [resending, setResending] = useState(false);
 
@@ -92,8 +111,8 @@ export default function AuthPage() {
     }
     if (!data.session) {
       setConfirmationEmail(email);
-      setAwaitingConfirmation(true);
       setResendCooldown(30);
+      setScreen(SCREEN.CONFIRM_SIGNUP);
       return;
     }
     toast.success("Account created! You can start tracking now.");
@@ -116,20 +135,55 @@ export default function AuthPage() {
     setResendCooldown(30);
   };
 
-  const forgot = async () => {
-    if (!email) {
+  const openForgotPassword = () => {
+    setResetEmail(email); // pre-fill with whatever they'd typed on the sign-in tab
+    setScreen(SCREEN.FORGOT_FORM);
+  };
+
+  const sendResetLink = async () => {
+    if (!resetEmail.trim()) {
       toast.error("Enter your email first");
       return;
     }
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/auth`,
+    setResetLoading(true);
+    try {
+      const exists = await checkEmailExists(resetEmail.trim());
+      if (!exists) {
+        toast.error("No account found with that email.");
+        return;
+      }
+      const { error } = await supabase.auth.resetPasswordForEmail(resetEmail.trim(), {
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
+      if (error) {
+        toast.error(error.message);
+        return;
+      }
+      setResendCooldown(30);
+      setScreen(SCREEN.FORGOT_SENT);
+    } catch (err) {
+      toast.error(err.message || "Couldn't check that email right now. Try again.");
+    } finally {
+      setResetLoading(false);
+    }
+  };
+
+  const resendResetLink = async () => {
+    if (resendCooldown > 0 || resending) return;
+    setResending(true);
+    const { error } = await supabase.auth.resetPasswordForEmail(resetEmail.trim(), {
+      redirectTo: `${window.location.origin}/reset-password`,
     });
+    setResending(false);
     if (error) {
       toast.error(error.message);
       return;
     }
-    toast.success("Password reset link sent to your email.");
+    toast.success("Reset link resent.");
+    setResendCooldown(30);
   };
+
+  const backToSignIn = () => setScreen(SCREEN.AUTH);
 
   const google = async () => {
     setRememberMePreference(rememberMe);
@@ -158,15 +212,16 @@ export default function AuthPage() {
           </p>
         </div>
 
-        {awaitingConfirmation ? (
+        {screen === SCREEN.CONFIRM_SIGNUP && (
           <div className="surface flex flex-col items-center p-6 text-center">
             <span className="mb-4 flex size-14 items-center justify-center rounded-2xl bg-primary/10 text-primary">
               <MailCheck className="size-7" />
             </span>
             <h2 className="text-xl font-semibold text-foreground">Check your email</h2>
             <p className="mt-2 text-sm text-muted-foreground">
-              We sent a confirmation link to <span className="font-medium text-foreground">{confirmationEmail}</span>.
-              Click it to activate your account, then come back and sign in.
+              We sent a confirmation link to{" "}
+              <span className="font-medium text-foreground">{confirmationEmail}</span>. Click it
+              to activate your account, then come back and sign in.
             </p>
             <Button
               variant="outline"
@@ -178,86 +233,150 @@ export default function AuthPage() {
             </Button>
             <button
               type="button"
-              onClick={() => setAwaitingConfirmation(false)}
+              onClick={backToSignIn}
               className="mt-4 text-center text-sm text-muted-foreground underline-offset-4 hover:underline"
             >
               Back to sign in
             </button>
           </div>
-        ) : (
-        <div className="surface p-6">
-          <Tabs defaultValue="signin">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="signin">Sign in</TabsTrigger>
-              <TabsTrigger value="signup">Sign up</TabsTrigger>
-            </TabsList>
+        )}
 
-            <TabsContent value="signin" className="mt-5 space-y-4">
-              <Field id="in-email" label="Email" value={email} onChange={setEmail} type="email" />
+        {screen === SCREEN.FORGOT_FORM && (
+          <div className="surface p-6">
+            <button
+              type="button"
+              onClick={backToSignIn}
+              className="mb-4 flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
+            >
+              <ArrowLeft className="size-4" /> Back to sign in
+            </button>
+            <span className="mb-4 flex size-14 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+              <KeyRound className="size-7" />
+            </span>
+            <h2 className="text-xl font-semibold text-foreground">Reset your password</h2>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Enter the email on your account and we'll send you a link to set a new password.
+            </p>
+            <div className="mt-5">
               <Field
-                id="in-password"
-                label="Password"
-                value={password}
-                onChange={setPassword}
-                type="password"
+                id="reset-email"
+                label="Email"
+                value={resetEmail}
+                onChange={setResetEmail}
+                type="email"
               />
-              <div className="flex items-center gap-2">
-                <Checkbox
-                  id="remember-me"
-                  checked={rememberMe}
-                  onCheckedChange={handleRememberMeChange}
-                />
-                <Label htmlFor="remember-me" className="cursor-pointer text-sm font-normal">
-                  Remember me
-                </Label>
-              </div>
-              <Button className="h-12 w-full" onClick={signIn} disabled={loading}>
-                Sign in <ArrowRight className="size-4" />
-              </Button>
-              <button
-                type="button"
-                onClick={forgot}
-                className="w-full text-center text-sm text-muted-foreground underline-offset-4 hover:underline"
-              >
-                Forgot password?
-              </button>
-            </TabsContent>
-
-            <TabsContent value="signup" className="mt-5 space-y-4">
-              <Field id="up-name" label="Name" value={name} onChange={setName} />
-              <Field id="up-email" label="Email" value={email} onChange={setEmail} type="email" />
-              <Field
-                id="up-password"
-                label="Password"
-                value={password}
-                onChange={setPassword}
-                type="password"
-              />
-              <Field
-                id="up-confirm-password"
-                label="Confirm password"
-                value={confirmPassword}
-                onChange={setConfirmPassword}
-                type="password"
-              />
-              <Button className="h-12 w-full" onClick={signUp} disabled={loading}>
-                Create account <ArrowRight className="size-4" />
-              </Button>
-            </TabsContent>
-          </Tabs>
-
-          <div className="my-5 flex items-center gap-3 text-xs text-muted-foreground">
-            <span className="h-px flex-1 bg-border" /> or <span className="h-px flex-1 bg-border" />
+            </div>
+            <Button className="mt-5 h-12 w-full" onClick={sendResetLink} disabled={resetLoading}>
+              Send reset link <ArrowRight className="size-4" />
+            </Button>
           </div>
-          <Button variant="outline" className="h-12 w-full" onClick={google}>
-            Continue with Google
-          </Button>
-        </div>
+        )}
+
+        {screen === SCREEN.FORGOT_SENT && (
+          <div className="surface flex flex-col items-center p-6 text-center">
+            <span className="mb-4 flex size-14 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+              <MailCheck className="size-7" />
+            </span>
+            <h2 className="text-xl font-semibold text-foreground">Check your email</h2>
+            <p className="mt-2 text-sm text-muted-foreground">
+              We sent a password reset link to{" "}
+              <span className="font-medium text-foreground">{resetEmail}</span>. Open it to
+              choose a new password.
+            </p>
+            <Button
+              variant="outline"
+              className="mt-6 h-12 w-full"
+              onClick={resendResetLink}
+              disabled={resendCooldown > 0 || resending}
+            >
+              {resendCooldown > 0 ? `Resend email (${resendCooldown}s)` : "Resend email"}
+            </Button>
+            <button
+              type="button"
+              onClick={backToSignIn}
+              className="mt-4 text-center text-sm text-muted-foreground underline-offset-4 hover:underline"
+            >
+              Back to sign in
+            </button>
+          </div>
+        )}
+
+        {screen === SCREEN.AUTH && (
+          <div className="surface p-6">
+            <Tabs defaultValue="signin">
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="signin">Sign in</TabsTrigger>
+                <TabsTrigger value="signup">Sign up</TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="signin" className="mt-5 space-y-4">
+                <Field id="in-email" label="Email" value={email} onChange={setEmail} type="email" />
+                <Field
+                  id="in-password"
+                  label="Password"
+                  value={password}
+                  onChange={setPassword}
+                  type="password"
+                />
+                <div className="flex items-center gap-2">
+                  <Checkbox
+                    id="remember-me"
+                    checked={rememberMe}
+                    onCheckedChange={handleRememberMeChange}
+                  />
+                  <Label htmlFor="remember-me" className="cursor-pointer text-sm font-normal">
+                    Remember me
+                  </Label>
+                </div>
+                <Button className="h-12 w-full" onClick={signIn} disabled={loading}>
+                  Sign in <ArrowRight className="size-4" />
+                </Button>
+                <button
+                  type="button"
+                  onClick={openForgotPassword}
+                  className="w-full text-center text-sm text-muted-foreground underline-offset-4 hover:underline"
+                >
+                  Forgot password?
+                </button>
+              </TabsContent>
+
+              <TabsContent value="signup" className="mt-5 space-y-4">
+                <Field id="up-name" label="Name" value={name} onChange={setName} />
+                <Field id="up-email" label="Email" value={email} onChange={setEmail} type="email" />
+                <Field
+                  id="up-password"
+                  label="Password"
+                  value={password}
+                  onChange={setPassword}
+                  type="password"
+                />
+                <Field
+                  id="up-confirm-password"
+                  label="Confirm password"
+                  value={confirmPassword}
+                  onChange={setConfirmPassword}
+                  type="password"
+                />
+                <Button className="h-12 w-full" onClick={signUp} disabled={loading}>
+                  Create account <ArrowRight className="size-4" />
+                </Button>
+              </TabsContent>
+            </Tabs>
+
+            <div className="my-5 flex items-center gap-3 text-xs text-muted-foreground">
+              <span className="h-px flex-1 bg-border" /> or{" "}
+              <span className="h-px flex-1 bg-border" />
+            </div>
+            <Button variant="outline" className="h-12 w-full" onClick={google}>
+              Continue with Google
+            </Button>
+          </div>
         )}
 
         <p className="mt-6 text-center text-xs text-muted-foreground">
           Your financial data is private and visible only to you.
         </p>
+        <SiteFooter />
       </div>
     </div>
   );
