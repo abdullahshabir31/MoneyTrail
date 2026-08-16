@@ -33,6 +33,30 @@ export function useItems() {
   });
 }
 
+export function usePaymentMethods() {
+  return useDataQuery("payment_methods", async () => {
+    const { data, error } = await db.from("payment_methods").select("*").order("name");
+    if (error) throw error;
+    return data ?? [];
+  });
+}
+
+export function useAddPaymentMethod() {
+  return useDataMutation(
+    async ({ name }) => {
+      const user_id = await uid();
+      const { data, error } = await db
+        .from("payment_methods")
+        .insert({ name, user_id })
+        .select()
+        .single();
+      if (error) throw error;
+      return data;
+    },
+    { onSuccess: () => invalidateQueries(["payment_methods"]) },
+  );
+}
+
 export function useTransactions() {
   return useDataQuery("transactions", async () => {
     const { data, error } = await db
