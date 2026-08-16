@@ -1,5 +1,55 @@
 import { createClient } from "@supabase/supabase-js";
 
+// --- "Remember me" session persistence -------------------------------------
+//
+// Supabase's client is created once, but whether a session should survive a
+// browser restart is a per-sign-in choice ("Remember me"). We can't swap the
+// client's storage engine after creation, so instead we hand Supabase a
+// storage adapter that decides — on every read/write — whether the active
+// preference wants localStorage (persists across restarts) or sessionStorage
+// (cleared when the browser/tab closes).
+//
+// The preference itself is a small, non-sensitive flag stored in
+// localStorage so the checkbox can restore its last state even when the
+// session itself was only kept in sessionStorage.
+const REMEMBER_ME_KEY = "mt-remember-me";
+
+export function getRememberMePreference() {
+  if (typeof window === "undefined") return true;
+  const stored = window.localStorage.getItem(REMEMBER_ME_KEY);
+  return stored === null ? true : stored === "true";
+}
+
+export function setRememberMePreference(remember) {
+  if (typeof window === "undefined") return;
+  window.localStorage.setItem(REMEMBER_ME_KEY, remember ? "true" : "false");
+}
+
+function createAuthStorage() {
+  return {
+    getItem(key) {
+      if (typeof window === "undefined") return null;
+      // Whichever store the current/last session was written to wins.
+      return window.localStorage.getItem(key) ?? window.sessionStorage.getItem(key);
+    },
+    setItem(key, value) {
+      if (typeof window === "undefined") return;
+      if (getRememberMePreference()) {
+        window.localStorage.setItem(key, value);
+        window.sessionStorage.removeItem(key);
+      } else {
+        window.sessionStorage.setItem(key, value);
+        window.localStorage.removeItem(key);
+      }
+    },
+    removeItem(key) {
+      if (typeof window === "undefined") return;
+      window.localStorage.removeItem(key);
+      window.sessionStorage.removeItem(key);
+    },
+  };
+}
+
 function isNewSupabaseApiKey(value) {
   return value.startsWith("sb_publishable_") || value.startsWith("sb_secret_");
 }
@@ -44,7 +94,7 @@ function createSupabaseClient() {
       fetch: createSupabaseFetch(SUPABASE_PUBLISHABLE_KEY),
     },
     auth: {
-      storage: typeof window !== "undefined" ? window.localStorage : undefined,
+      storage: typeof window !== "undefined" ? createAuthStorage() : undefined,
       persistSession: true,
       autoRefreshToken: true,
     },
