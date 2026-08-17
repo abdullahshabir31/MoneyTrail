@@ -57,6 +57,90 @@ export function useAddPaymentMethod() {
   );
 }
 
+/** Sets/edits how much was already in an account before tracking started. */
+export function useSetOpeningBalance() {
+  return useDataMutation(
+    async ({ id, opening_balance }) => {
+      const { error } = await db.from("payment_methods").update({ opening_balance }).eq("id", id);
+      if (error) throw error;
+    },
+    { onSuccess: () => invalidateQueries(["payment_methods"]) },
+  );
+}
+
+export function useAccountTransfers() {
+  return useDataQuery("account_transfers", async () => {
+    const { data, error } = await db
+      .from("account_transfers")
+      .select("*")
+      .order("date", { ascending: false })
+      .order("created_at", { ascending: false });
+    if (error) throw error;
+    return (data ?? []).map((t) => ({ ...t, amount: Number(t.amount) }));
+  });
+}
+
+/** Moves money from one of the user's own accounts to another (e.g. JazzCash -> Easypaisa). */
+export function useAddTransfer() {
+  return useDataMutation(
+    async ({ from_method, to_method, amount, date, note }) => {
+      const user_id = await uid();
+      const { error } = await db
+        .from("account_transfers")
+        .insert({ from_method, to_method, amount, date, note: note || null, user_id });
+      if (error) throw error;
+    },
+    { onSuccess: () => invalidateQueries(["account_transfers"]) },
+  );
+}
+
+/**
+ * Balance per account = opening balance + income on that method - expenses on
+ * that method + transfers in - transfers out. Computed client-side from data
+ * already being fetched elsewhere, so every screen stays in sync for free
+ * whenever a transaction, transfer, or opening balance changes.
+ */
+export function useAccountBalances() {
+  const methods = usePaymentMethods();
+  const transactions = useTransactions();
+  const transfers = useAccountTransfers();
+
+  const isLoading = methods.isLoading || transactions.isLoading || transfers.isLoading;
+  const error = methods.error || transactions.error || transfers.error;
+
+  const accounts = (methods.data ?? [])
+    .filter((m) => m.is_active !== false)
+    .map((m) => {
+      const income = (transactions.data ?? [])
+        .filter((t) => t.type === "income" && t.payment_method === m.name)
+        .reduce((sum, t) => sum + t.amount, 0);
+      const expense = (transactions.data ?? [])
+        .filter((t) => t.type === "expense" && t.payment_method === m.name)
+        .reduce((sum, t) => sum + t.amount, 0);
+      const transferIn = (transfers.data ?? [])
+        .filter((t) => t.to_method === m.name)
+        .reduce((sum, t) => sum + t.amount, 0);
+      const transferOut = (transfers.data ?? [])
+        .filter((t) => t.from_method === m.name)
+        .reduce((sum, t) => sum + t.amount, 0);
+      const openingBalance = Number(m.opening_balance ?? 0);
+      const balance = openingBalance + income - expense + transferIn - transferOut;
+      return {
+        ...m,
+        opening_balance: openingBalance,
+        income,
+        expense,
+        transferIn,
+        transferOut,
+        balance,
+      };
+    });
+
+  const totalBalance = accounts.reduce((sum, a) => sum + a.balance, 0);
+
+  return { accounts, totalBalance, isLoading, error };
+}
+
 export function useTransactions() {
   return useDataQuery("transactions", async () => {
     const { data, error } = await db
