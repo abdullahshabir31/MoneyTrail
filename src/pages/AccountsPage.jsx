@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
+import { Link } from "react-router-dom";
 import { toast } from "sonner";
-import { ArrowLeftRight, Pencil, Wallet2 } from "lucide-react";
+import { ArrowLeftRight, ChevronRight, Pencil, Wallet2 } from "lucide-react";
 import { PageHeader, EmptyState, StatCard } from "@/components/Bits";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -33,7 +34,12 @@ import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 export default function AccountsPage() {
   useDocumentTitle("Accounts — MoneyTrail");
 
-  const { accounts, totalBalance, isLoading } = useAccountBalances();
+  const { accounts: allAccounts, totalBalance, isLoading } = useAccountBalances();
+  // "Used" = balance isn't sitting at exactly zero — no opening balance and no
+  // income/expense/transfer has touched it yet. Unused accounts (e.g. default
+  // payment methods nobody has picked) stay hidden until they actually hold
+  // money, so the list only shows accounts that matter.
+  const accounts = useMemo(() => allAccounts.filter((a) => a.balance !== 0), [allAccounts]);
   const { data: transfers = [] } = useAccountTransfers();
   const { data: profile } = useProfile();
   const currency = profile?.currency ?? "PKR";
@@ -44,7 +50,9 @@ export default function AccountsPage() {
       <PageHeader
         title="Accounts"
         subtitle="How much money sits in each account, updated automatically as you add income and expenses"
-        action={<TransferDialog accounts={accounts} currency={currency} />}
+        action={
+          <TransferDialog usedAccounts={accounts} allAccounts={allAccounts} currency={currency} />
+        }
       />
 
       <StatCard
@@ -57,8 +65,12 @@ export default function AccountsPage() {
 
       {!isLoading && accounts.length === 0 ? (
         <EmptyState
-          title="No accounts yet"
-          description="Payment methods you use on income or expenses (Cash, Bank, Easypaisa...) show up here automatically."
+          title={allAccounts.length === 0 ? "No accounts yet" : "No accounts used yet"}
+          description={
+            allAccounts.length === 0
+              ? "Payment methods you use on income or expenses (Cash, Bank, Easypaisa...) show up here automatically."
+              : "Add an income or expense (or a transfer) using a payment method, and it'll show up here with its balance."
+          }
         />
       ) : (
         <div className="grid gap-3 sm:grid-cols-2">
@@ -122,8 +134,14 @@ function AccountCard({ account, currency, editing, onEdit, onDoneEdit }) {
   return (
     <div className="surface p-4">
       <div className="flex items-start justify-between gap-2">
-        <div>
-          <p className="text-sm font-medium text-muted-foreground">{account.name}</p>
+        <Link
+          to={`/transactions?method=${encodeURIComponent(account.name)}`}
+          className="min-w-0 flex-1 rounded-lg -m-1 p-1 transition-colors hover:bg-accent"
+        >
+          <p className="flex items-center gap-1 text-sm font-medium text-muted-foreground">
+            {account.name}
+            <ChevronRight className="size-3.5 opacity-50" />
+          </p>
           <p
             className={cn(
               "mt-1 text-2xl font-bold tracking-tight",
@@ -132,14 +150,16 @@ function AccountCard({ account, currency, editing, onEdit, onDoneEdit }) {
           >
             {formatMoney(account.balance, currency)}
           </p>
-        </div>
+        </Link>
         <Button
           type="button"
           size="icon"
           variant="ghost"
           className="size-8 shrink-0 text-muted-foreground"
           aria-label="Edit opening balance"
-          onClick={() => {
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
             setValue(String(account.opening_balance));
             editing ? onDoneEdit() : onEdit();
           }}
@@ -173,7 +193,7 @@ function AccountCard({ account, currency, editing, onEdit, onDoneEdit }) {
   );
 }
 
-function TransferDialog({ accounts, currency }) {
+function TransferDialog({ usedAccounts, allAccounts, currency }) {
   const [open, setOpen] = useState(false);
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
@@ -182,7 +202,10 @@ function TransferDialog({ accounts, currency }) {
   const [note, setNote] = useState("");
   const addTransfer = useAddTransfer();
 
-  const fromAccount = useMemo(() => accounts.find((a) => a.name === from), [accounts, from]);
+  const fromAccount = useMemo(
+    () => usedAccounts.find((a) => a.name === from),
+    [usedAccounts, from],
+  );
 
   const reset = () => {
     setFrom("");
@@ -235,7 +258,7 @@ function TransferDialog({ accounts, currency }) {
           <ArrowLeftRight className="size-4" /> Transfer
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-h-[85vh] gap-4 overflow-y-auto overscroll-contain rounded-2xl touch-pan-y sm:max-w-md">
+      <DialogContent className="gap-4 rounded-2xl sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Transfer between accounts</DialogTitle>
         </DialogHeader>
@@ -247,13 +270,18 @@ function TransferDialog({ accounts, currency }) {
               <SelectValue placeholder="Source account" />
             </SelectTrigger>
             <SelectContent>
-              {accounts.map((a) => (
+              {usedAccounts.map((a) => (
                 <SelectItem key={a.id} value={a.name}>
                   {a.name} · {formatMoney(a.balance, currency)}
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
+          {usedAccounts.length === 0 ? (
+            <p className="text-xs text-muted-foreground">
+              No account has any balance yet — add an income first.
+            </p>
+          ) : null}
           {fromAccount && Number(amount) > fromAccount.balance ? (
             <p className="text-xs text-warning">
               This is more than the current balance in {from} (
@@ -269,7 +297,7 @@ function TransferDialog({ accounts, currency }) {
               <SelectValue placeholder="Destination account" />
             </SelectTrigger>
             <SelectContent>
-              {accounts
+              {allAccounts
                 .filter((a) => a.name !== from)
                 .map((a) => (
                   <SelectItem key={a.id} value={a.name}>
