@@ -59,11 +59,43 @@ export function invalidateQueries(keys) {
   });
 }
 
+// Tracks the latest queryFn registered for each key so the foreground
+// revalidation below can refetch a key even though it only has the key, not
+// a component to ask for its queryFn.
+const queryFnByKey = new Map();
+
+// ---------------------------------------------------------------------------
+// Refetch everything that's currently on screen whenever the app comes back
+// to the foreground (tab refocused, or a mobile/PWA app switched back to).
+//
+// invalidateQueries() already makes a change made *within* a live session
+// show up everywhere immediately. But it only fires for the specific keys a
+// mutation names — it can't know about a change made while the app was
+// backgrounded, another tab, or a previous session that hadn't reconciled
+// yet. Without this, a stale screen would only ever refresh itself on a full
+// reload (closing and reopening the app), which is confusing since the data
+// on the server is already correct. Revalidating every mounted query on
+// focus/visibility closes that gap so what you see always matches the
+// server, not just "whatever happened to change in this tab".
+if (typeof document !== "undefined") {
+  const revalidateMountedQueries = () => {
+    if (document.visibilityState !== "visible") return;
+    subscribers.forEach((subs, key) => {
+      const queryFn = queryFnByKey.get(key);
+      if (subs.size > 0 && queryFn) runFetch(key, queryFn);
+    });
+  };
+  document.addEventListener("visibilitychange", revalidateMountedQueries);
+  window.addEventListener("focus", revalidateMountedQueries);
+  window.addEventListener("pageshow", revalidateMountedQueries);
+}
+
 /** useQuery-like hook backed by the shared cache above. */
 export function useDataQuery(key, queryFn) {
   const [, setTick] = useState(0);
   const queryFnRef = useRef(queryFn);
   queryFnRef.current = queryFn;
+  queryFnByKey.set(key, queryFn);
 
   useEffect(() => {
     // `emit(key)` fires this for every mounted subscriber of `key` — both

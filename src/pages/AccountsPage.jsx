@@ -30,6 +30,7 @@ import {
   useSetOpeningBalance,
 } from "@/hooks/useFinance";
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
+import { useDismissKeyboardOnScroll } from "@/hooks/useDismissKeyboardOnScroll";
 
 export default function AccountsPage() {
   useDocumentTitle("Accounts — MoneyTrail");
@@ -50,9 +51,7 @@ export default function AccountsPage() {
       <PageHeader
         title="Accounts"
         subtitle="How much money sits in each account, updated automatically as you add income and expenses"
-        action={
-          <TransferDialog usedAccounts={accounts} allAccounts={allAccounts} currency={currency} />
-        }
+        action={<TransferDialog usedAccounts={accounts} currency={currency} />}
       />
 
       <StatCard
@@ -193,7 +192,7 @@ function AccountCard({ account, currency, editing, onEdit, onDoneEdit }) {
   );
 }
 
-function TransferDialog({ usedAccounts, allAccounts, currency }) {
+function TransferDialog({ usedAccounts, currency }) {
   const [open, setOpen] = useState(false);
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
@@ -201,9 +200,16 @@ function TransferDialog({ usedAccounts, allAccounts, currency }) {
   const [date, setDate] = useState(todayISO());
   const [note, setNote] = useState("");
   const addTransfer = useAddTransfer();
+  const dismissKeyboardOnScroll = useDismissKeyboardOnScroll();
 
   const fromAccount = useMemo(
     () => usedAccounts.find((a) => a.name === from),
+    [usedAccounts, from],
+  );
+  // Same "only accounts that actually hold money" rule as the "From" list
+  // above — a destination with a zero balance just clutters the picker.
+  const toAccounts = useMemo(
+    () => usedAccounts.filter((a) => a.name !== from),
     [usedAccounts, from],
   );
 
@@ -258,7 +264,10 @@ function TransferDialog({ usedAccounts, allAccounts, currency }) {
           <ArrowLeftRight className="size-4" /> Transfer
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-h-[85vh] gap-4 overflow-y-auto overscroll-contain rounded-2xl touch-pan-y sm:max-w-md">
+      <DialogContent
+        className="max-h-[85vh] gap-4 overflow-y-auto overscroll-contain rounded-2xl touch-pan-y sm:max-w-md"
+        onScroll={dismissKeyboardOnScroll}
+      >
         <DialogHeader>
           <DialogTitle>Transfer between accounts</DialogTitle>
         </DialogHeader>
@@ -297,15 +306,18 @@ function TransferDialog({ usedAccounts, allAccounts, currency }) {
               <SelectValue placeholder="Destination account" />
             </SelectTrigger>
             <SelectContent>
-              {allAccounts
-                .filter((a) => a.name !== from)
-                .map((a) => (
-                  <SelectItem key={a.id} value={a.name}>
-                    {a.name} · {formatMoney(a.balance, currency)}
-                  </SelectItem>
-                ))}
+              {toAccounts.map((a) => (
+                <SelectItem key={a.id} value={a.name}>
+                  {a.name} · {formatMoney(a.balance, currency)}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
+          {toAccounts.length === 0 ? (
+            <p className="text-xs text-muted-foreground">
+              No other account has a balance yet — add an income first.
+            </p>
+          ) : null}
         </div>
 
         <div className="grid grid-cols-2 gap-3">

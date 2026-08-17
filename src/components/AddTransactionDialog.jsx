@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { todayISO } from "@/lib/finance";
+import { useDismissKeyboardOnScroll } from "@/hooks/useDismissKeyboardOnScroll";
 import {
   useAddCategory,
   useAddItem,
@@ -173,16 +174,7 @@ export function AddTransactionDialog({
       toast.error("Could not add that payment method — it may already exist.");
     }
   };
-  // On mobile, scrolling the dialog while a text field is focused should
-  // dismiss the on-screen keyboard (instead of it staying open and covering
-  // part of the form while you scroll past it) — blur whatever's focused as
-  // soon as a scroll happens.
-  const dismissKeyboardOnScroll = () => {
-    const active = document.activeElement;
-    if (active && (active.tagName === "INPUT" || active.tagName === "TEXTAREA")) {
-      active.blur();
-    }
-  };
+  const dismissKeyboardOnScroll = useDismissKeyboardOnScroll();
   const submit = async () => {
     const value = Number(amount);
     if (!value || value <= 0) {
