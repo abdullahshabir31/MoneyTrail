@@ -1,4 +1,5 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 import { Pencil, Trash2, Search, Plus } from "lucide-react";
 import { PageHeader, EmptyState } from "@/components/Bits";
@@ -36,7 +37,11 @@ export default function TransactionsPage() {
   const [search, setSearch] = useState("");
   const [type, setType] = useState("all");
   const [category, setCategory] = useState("all");
-  const [method, setMethod] = useState("all");
+  // Coming from the Accounts page ("view this account's transactions") lands
+  // here with ?method=<name> — preselect that account's filter so the list
+  // is already narrowed down to just its transactions.
+  const [searchParams] = useSearchParams();
+  const [method, setMethod] = useState(searchParams.get("method") ?? "all");
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
   const [sort, setSort] = useState("newest");
@@ -44,6 +49,20 @@ export default function TransactionsPage() {
 
   const catName = (id) => categories.find((c) => c.id === id)?.name ?? "—";
   const itemName = (id) => items.find((i) => i.id === id)?.name ?? "—";
+
+  // Re-sync if the URL's ?method= changes to a *new* value while already on
+  // this page (e.g. clicking a different account on the Accounts page
+  // without a full navigation/remount). Track the last value we applied so
+  // a manual change to the filter dropdown (which doesn't touch the URL)
+  // isn't fought by this effect on the next render.
+  const appliedMethodParam = useRef(searchParams.get("method"));
+  useEffect(() => {
+    const fromUrl = searchParams.get("method");
+    if (fromUrl && fromUrl !== appliedMethodParam.current) {
+      setMethod(fromUrl);
+      appliedMethodParam.current = fromUrl;
+    }
+  }, [searchParams]);
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
