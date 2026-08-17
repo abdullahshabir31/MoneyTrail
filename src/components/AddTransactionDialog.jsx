@@ -204,7 +204,7 @@ export function AddTransactionDialog({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       {trigger ? <DialogTrigger asChild>{trigger}</DialogTrigger> : null}
-      <DialogContent className="max-h-[85vh] gap-4 overflow-y-auto overscroll-contain rounded-2xl touch-pan-y sm:max-w-lg">
+      <DialogContent className="gap-4 rounded-2xl sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>{transaction ? "Edit transaction" : "Add transaction"}</DialogTitle>
         </DialogHeader>
