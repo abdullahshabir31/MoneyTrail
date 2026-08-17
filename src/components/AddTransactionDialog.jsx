@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
-import { Check, Plus } from "lucide-react";
+import { Check, Plus, Search, X } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -58,6 +58,7 @@ export function AddTransactionDialog({
   const [newItem, setNewItem] = useState(null);
   const [newCategory, setNewCategory] = useState(null);
   const [newMethod, setNewMethod] = useState(null);
+  const [categorySearch, setCategorySearch] = useState("");
   useEffect(() => {
     if (!open) return;
     setType(transaction?.type ?? defaultType);
@@ -71,6 +72,7 @@ export function AddTransactionDialog({
     setNewItem(null);
     setNewCategory(null);
     setNewMethod(null);
+    setCategorySearch("");
   }, [open, defaultType, transaction]);
   const visibleCategories = useMemo(
     () => categories.filter((c) => c.type === type && c.is_active),
@@ -88,6 +90,52 @@ export function AddTransactionDialog({
         .slice(0, 4),
     [categoryItems],
   );
+  // Search across every category AND every item of the current type (income
+  // or expense), so typing e.g. "train" finds "Train" even though it lives
+  // inside "Transport" — no need to open Transport first to find it.
+  const categorySearchResults = useMemo(() => {
+    const q = categorySearch.trim().toLowerCase();
+    if (!q) return [];
+    const visibleIds = new Set(visibleCategories.map((c) => c.id));
+    const catById = new Map(visibleCategories.map((c) => [c.id, c]));
+    const results = [];
+    for (const it of items) {
+      if (!it.is_active || !visibleIds.has(it.category_id)) continue;
+      if (it.name.toLowerCase().includes(q)) {
+        const cat = catById.get(it.category_id);
+        results.push({
+          key: `item-${it.id}`,
+          categoryId: cat.id,
+          itemId: it.id,
+          label: it.name,
+          hint: cat.name,
+        });
+      }
+    }
+    for (const c of visibleCategories) {
+      if (c.name.toLowerCase().includes(q)) {
+        results.push({
+          key: `cat-${c.id}`,
+          categoryId: c.id,
+          itemId: null,
+          label: c.name,
+          hint: null,
+        });
+      }
+    }
+    return results.slice(0, 25);
+  }, [categorySearch, items, visibleCategories]);
+  const handleSearchSelect = (result) => {
+    setCategoryId(result.categoryId);
+    setItemId(result.itemId ?? "");
+    setNewCategory(null);
+    setNewItem(null);
+    setCategorySearch("");
+    const catName = result.hint ?? categories.find((c) => c.id === result.categoryId)?.name;
+    toast.success(
+      result.hint ? `${result.label} selected, in ${catName}` : `${result.label} selected`,
+    );
+  };
   const handleAddItem = async () => {
     const name = (newItem ?? "").trim();
     if (!name || !categoryId) return;
@@ -156,7 +204,7 @@ export function AddTransactionDialog({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       {trigger ? <DialogTrigger asChild>{trigger}</DialogTrigger> : null}
-      <DialogContent className="max-h-[92vh] gap-4 overflow-y-auto rounded-2xl sm:max-w-lg">
+      <DialogContent className="max-h-[85vh] gap-4 overflow-y-auto overscroll-contain rounded-2xl touch-pan-y sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>{transaction ? "Edit transaction" : "Add transaction"}</DialogTitle>
         </DialogHeader>
@@ -265,38 +313,83 @@ export function AddTransactionDialog({
 
         <div className="grid gap-2">
           <Label>Category</Label>
-          <div className="flex flex-wrap gap-2">
-            {visibleCategories.map((c) => (
+          <div className="relative">
+            <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              value={categorySearch}
+              onChange={(e) => setCategorySearch(e.target.value)}
+              placeholder="Search category or item, e.g. Train"
+              className="h-11 pl-9 pr-9"
+            />
+            {categorySearch ? (
               <button
-                key={c.id}
+                type="button"
+                onClick={() => setCategorySearch("")}
+                aria-label="Clear search"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+              >
+                <X className="size-4" />
+              </button>
+            ) : null}
+          </div>
+
+          {categorySearch.trim() ? (
+            categorySearchResults.length > 0 ? (
+              <div className="flex flex-wrap gap-2">
+                {categorySearchResults.map((r) => (
+                  <button
+                    key={r.key}
+                    type="button"
+                    onClick={() => handleSearchSelect(r)}
+                    className="flex items-center gap-1.5 rounded-full border border-primary/40 bg-primary/5 px-3.5 py-2 text-sm font-medium hover:bg-primary/10"
+                  >
+                    {r.label}
+                    {r.hint ? (
+                      <span className="text-xs text-muted-foreground">in {r.hint}</span>
+                    ) : null}
+                  </button>
+                ))}
+              </div>
+            ) : (
+              <p className="px-1 text-sm text-muted-foreground">
+                No match for "{categorySearch}". Try another word, or add it as a new category
+                below.
+              </p>
+            )
+          ) : (
+            <div className="flex flex-wrap gap-2">
+              {visibleCategories.map((c) => (
+                <button
+                  key={c.id}
+                  type="button"
+                  onClick={() => {
+                    setCategoryId(c.id);
+                    setItemId("");
+                    setNewCategory(null);
+                    setNewItem(null);
+                  }}
+                  className={cn(
+                    "rounded-full border border-border px-3.5 py-2 text-sm font-medium transition-colors",
+                    categoryId === c.id
+                      ? "border-primary bg-primary text-primary-foreground"
+                      : "hover:bg-accent",
+                  )}
+                >
+                  {c.name}
+                </button>
+              ))}
+              <button
                 type="button"
                 onClick={() => {
-                  setCategoryId(c.id);
-                  setItemId("");
-                  setNewCategory(null);
+                  setNewCategory(newCategory === null ? "" : null);
                   setNewItem(null);
                 }}
-                className={cn(
-                  "rounded-full border border-border px-3.5 py-2 text-sm font-medium transition-colors",
-                  categoryId === c.id
-                    ? "border-primary bg-primary text-primary-foreground"
-                    : "hover:bg-accent",
-                )}
+                className="flex items-center gap-1 rounded-full border border-dashed border-border px-3.5 py-2 text-sm text-muted-foreground hover:bg-accent"
               >
-                {c.name}
+                <Plus className="size-3.5" /> Add New
               </button>
-            ))}
-            <button
-              type="button"
-              onClick={() => {
-                setNewCategory(newCategory === null ? "" : null);
-                setNewItem(null);
-              }}
-              className="flex items-center gap-1 rounded-full border border-dashed border-border px-3.5 py-2 text-sm text-muted-foreground hover:bg-accent"
-            >
-              <Plus className="size-3.5" /> Add New
-            </button>
-          </div>
+            </div>
+          )}
           {newCategory !== null ? (
             <div className="flex gap-2">
               <Input
