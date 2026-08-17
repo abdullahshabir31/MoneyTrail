@@ -19,23 +19,20 @@ const DialogOverlay = React.forwardRef(({ className, ...props }, ref) => (
 ));
 DialogOverlay.displayName = DialogPrimitive.Overlay.displayName;
 // NOTE on the iOS "content wobbles while dragging" bug:
-// This actually took two fixes:
-// 1) The old version centered DialogContent with `fixed + top/left:50% +
-//    translate(-50%,-50%)`, and iOS Safari repaints fixed+transformed
-//    elements oddly during a touch-scroll gesture. Fixed below by making
-//    the fixed, full-viewport element a plain flex-centering wrapper (no
-//    transform) and letting DialogPrimitive.Content sit inside it with
-//    normal document-flow positioning (`relative`, no fixed/translate).
-// 2) iOS Safari also gets confused by TWO nested scrollable regions (an
-//    `overflow-y-auto` wrapper containing another `overflow-y-auto` box) —
-//    it can't tell which one a drag gesture belongs to, which is what was
-//    still causing the wobble even after fix #1. So there must only ever
-//    be ONE scrollable region: this wrapper. Callers (e.g.
-//    AddTransactionDialog) must NOT add their own `overflow-y-auto`/`max-h`
-//    to the className they pass to DialogContent — long dialogs scroll via
-//    this wrapper instead.
-// `overscroll-contain` + `touch-pan-y` on the wrapper stop the drag
-// gesture from also rubber-banding the page behind the dialog.
+// The old version centered DialogContent with `fixed + top/left:50% +
+// translate(-50%,-50%)` and put `overflow-y-auto` on that SAME fixed,
+// transformed element. iOS Safari repaints fixed-position elements during
+// a touch-scroll gesture, and doing that to an element that also has a
+// centering transform is what produced the visible jump/shift on drag
+// (this doesn't happen on desktop browsers or Android Chrome, which repaint
+// fixed+transformed elements differently). It only ever showed up on iPhone.
+//
+// Fix: the fixed, full-viewport element is now just a plain flex-centering
+// wrapper with no transform. DialogPrimitive.Content sits inside it with
+// normal document-flow positioning (`relative`, no fixed/translate), so
+// there's nothing for iOS to visually "wobble" while its own content
+// scrolls. `overscroll-contain` + `touch-pan-y` stop the drag gesture from
+// also rubber-banding the page behind the dialog.
 const DialogContent = React.forwardRef(({ className, children, ...props }, ref) => (
   <DialogPortal>
     <DialogOverlay />

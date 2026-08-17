@@ -258,7 +258,7 @@ function TransferDialog({ usedAccounts, allAccounts, currency }) {
           <ArrowLeftRight className="size-4" /> Transfer
         </Button>
       </DialogTrigger>
-      <DialogContent className="gap-4 rounded-2xl sm:max-w-md">
+      <DialogContent className="max-h-[85vh] gap-4 overflow-y-auto overscroll-contain rounded-2xl touch-pan-y sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Transfer between accounts</DialogTitle>
         </DialogHeader>

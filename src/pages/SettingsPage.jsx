@@ -273,15 +273,13 @@ export default function SettingsPage() {
             >
               <Wallet className="size-3.5 text-muted-foreground" />
               {m.name}
-              {!m.is_default ? (
-                <button
-                  onClick={() => removeMethod(m.id)}
-                  className="text-muted-foreground hover:text-destructive"
-                  aria-label={`Remove ${m.name}`}
-                >
-                  <Trash2 className="size-3" />
-                </button>
-              ) : null}
+              <button
+                onClick={() => removeMethod(m.id)}
+                className="text-muted-foreground hover:text-destructive"
+                aria-label={`Remove ${m.name}`}
+              >
+                <Trash2 className="size-3" />
+              </button>
             </span>
           ))}
         </div>

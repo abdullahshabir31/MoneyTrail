@@ -38,7 +38,7 @@ export default function TransactionsPage() {
   const [type, setType] = useState("all");
   const [category, setCategory] = useState("all");
   // Coming from the Accounts page ("view this account's transactions") lands
-  // here with ?method=<name> — preselect that account's filter so the list
+  // here with ?method=<n> — preselect that account's filter so the list
   // is already narrowed down to just its transactions.
   const [searchParams] = useSearchParams();
   const [method, setMethod] = useState(searchParams.get("method") ?? "all");

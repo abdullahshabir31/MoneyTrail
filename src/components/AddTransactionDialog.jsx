@@ -173,6 +173,16 @@ export function AddTransactionDialog({
       toast.error("Could not add that payment method — it may already exist.");
     }
   };
+  // On mobile, scrolling the dialog while a text field is focused should
+  // dismiss the on-screen keyboard (instead of it staying open and covering
+  // part of the form while you scroll past it) — blur whatever's focused as
+  // soon as a scroll happens.
+  const dismissKeyboardOnScroll = () => {
+    const active = document.activeElement;
+    if (active && (active.tagName === "INPUT" || active.tagName === "TEXTAREA")) {
+      active.blur();
+    }
+  };
   const submit = async () => {
     const value = Number(amount);
     if (!value || value <= 0) {
@@ -204,7 +214,10 @@ export function AddTransactionDialog({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       {trigger ? <DialogTrigger asChild>{trigger}</DialogTrigger> : null}
-      <DialogContent className="gap-4 rounded-2xl sm:max-w-lg">
+      <DialogContent
+        className="max-h-[85vh] gap-4 overflow-y-auto overscroll-contain rounded-2xl touch-pan-y sm:max-w-lg"
+        onScroll={dismissKeyboardOnScroll}
+      >
         <DialogHeader>
           <DialogTitle>{transaction ? "Edit transaction" : "Add transaction"}</DialogTitle>
         </DialogHeader>
@@ -240,7 +253,6 @@ export function AddTransactionDialog({
           <Input
             id="amount"
             inputMode="decimal"
-            autoFocus
             placeholder="0"
             value={amount}
             onChange={(e) => setAmount(e.target.value)}
