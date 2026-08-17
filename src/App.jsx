@@ -9,6 +9,7 @@ import ResetPasswordPage from "@/pages/ResetPasswordPage";
 import DashboardPage from "@/pages/DashboardPage";
 import TransactionsPage from "@/pages/TransactionsPage";
 import BudgetsPage from "@/pages/BudgetsPage";
+import AccountsPage from "@/pages/AccountsPage";
 import CategoriesPage from "@/pages/CategoriesPage";
 import RecurringPage from "@/pages/RecurringPage";
 import AnalyticsPage from "@/pages/AnalyticsPage";
@@ -28,6 +29,7 @@ export default function App() {
             <Route path="/dashboard" element={<DashboardPage />} />
             <Route path="/transactions" element={<TransactionsPage />} />
             <Route path="/budgets" element={<BudgetsPage />} />
+            <Route path="/accounts" element={<AccountsPage />} />
             <Route path="/categories" element={<CategoriesPage />} />
             <Route path="/recurring" element={<RecurringPage />} />
             <Route path="/analytics" element={<AnalyticsPage />} />
