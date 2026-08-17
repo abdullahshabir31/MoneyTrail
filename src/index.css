@@ -5,6 +5,35 @@
 @custom-variant dark (&:is(.dark *));
 
 /*
+ * iOS "Add to Home Screen" PWAs run in a standalone WKWebView that, unlike
+ * Safari itself, doesn't cleanly stop the *document* from rubber-band
+ * bouncing when you touch-drag — `overflow: hidden` on body (which is how
+ * most scroll-locks, including Radix's dialog lock, try to stop this)
+ * doesn't reliably block iOS's touch-driven scroll/bounce. The visible
+ * symptom is exactly "the whole screen/dialog shifts while dragging inside
+ * a modal", because it's actually the page underneath bouncing, not the
+ * dialog itself moving.
+ *
+ * Fix: stop the real document (html/body) from ever scrolling or bouncing,
+ * and let `#root` be the one scrollable container instead. Everything the
+ * app already relies on (page scroll, fixed sidebar/bottom-nav, dialogs)
+ * keeps working the same way — this only moves *where* the scrolling
+ * happens, from the un-lockable document to a normal div we control.
+ */
+html,
+body {
+  height: 100%;
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+#root {
+  height: 100%;
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+/*
  * Design system — personal finance tracker.
  * All colors are oklch semantic tokens. Never hardcode colors in components.
  */
