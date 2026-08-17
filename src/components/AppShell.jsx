@@ -27,8 +27,8 @@ import { signOut } from "@/hooks/useAuth";
 const NAV = [
   { to: "/dashboard", label: "Home", icon: LayoutDashboard },
   { to: "/transactions", label: "Transactions", icon: ListOrdered },
-  { to: "/budgets", label: "Budgets", icon: PiggyBank },
   { to: "/accounts", label: "Accounts", icon: Landmark },
+  { to: "/budgets", label: "Budgets", icon: PiggyBank },
   { to: "/analytics", label: "Analytics", icon: BarChart3 },
   { to: "/categories", label: "Categories", icon: Tags },
   { to: "/recurring", label: "Recurring", icon: Repeat },

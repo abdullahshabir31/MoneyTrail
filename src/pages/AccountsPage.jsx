@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
-import { ArrowLeftRight, ChevronRight, Pencil, Wallet2 } from "lucide-react";
+import { ArrowLeftRight, ChevronRight, Pencil, Trash2, Wallet2 } from "lucide-react";
 import { PageHeader, EmptyState, StatCard } from "@/components/Bits";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -26,6 +26,7 @@ import {
   useAccountBalances,
   useAccountTransfers,
   useAddTransfer,
+  useDeleteTransfer,
   useProfile,
   useSetOpeningBalance,
 } from "@/hooks/useFinance";
@@ -45,6 +46,16 @@ export default function AccountsPage() {
   const { data: profile } = useProfile();
   const currency = profile?.currency ?? "PKR";
   const [editingId, setEditingId] = useState(null);
+  const deleteTransfer = useDeleteTransfer();
+
+  const removeTransfer = async (id) => {
+    try {
+      await deleteTransfer.mutateAsync(id);
+      toast.success("Transfer deleted");
+    } catch {
+      toast.error("Something went wrong. Please try again.");
+    }
+  };
 
   return (
     <div className="space-y-5">
@@ -56,13 +67,13 @@ export default function AccountsPage() {
 
       <StatCard
         label="Total balance"
-        value={formatMoney(totalBalance, currency)}
-        hint={`Across ${accounts.length} account${accounts.length === 1 ? "" : "s"}`}
+        value={isLoading ? "—" : formatMoney(totalBalance, currency)}
+        hint={isLoading ? "Loading…" : `Across ${accounts.length} account${accounts.length === 1 ? "" : "s"}`}
         tone="savings"
         icon={<Wallet2 className="size-4 text-muted-foreground" />}
       />
 
-      {!isLoading && accounts.length === 0 ? (
+      {isLoading ? null : accounts.length === 0 ? (
         <EmptyState
           title={allAccounts.length === 0 ? "No accounts yet" : "No accounts used yet"}
           description={
@@ -102,9 +113,22 @@ export default function AccountsPage() {
                   <ArrowLeftRight className="size-3.5 text-muted-foreground" />
                   <span className="font-medium">{t.to_method}</span>
                 </div>
-                <div className="text-right">
-                  <p className="text-sm font-semibold">{formatMoney(t.amount, currency)}</p>
-                  <p className="text-xs text-muted-foreground">{formatDate(t.date)}</p>
+                <div className="flex items-center gap-2">
+                  <div className="text-right">
+                    <p className="text-sm font-semibold">{formatMoney(t.amount, currency)}</p>
+                    <p className="text-xs text-muted-foreground">{formatDate(t.date)}</p>
+                  </div>
+                  <Button
+                    type="button"
+                    size="icon"
+                    variant="ghost"
+                    className="size-8 shrink-0 text-muted-foreground hover:text-destructive"
+                    aria-label="Delete transfer"
+                    onClick={() => removeTransfer(t.id)}
+                    disabled={deleteTransfer.isPending}
+                  >
+                    <Trash2 className="size-3.5" />
+                  </Button>
                 </div>
               </div>
             ))}

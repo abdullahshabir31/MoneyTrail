@@ -94,6 +94,17 @@ export function useAddTransfer() {
   );
 }
 
+/** Removes a transfer between accounts (e.g. added by mistake, or with the wrong amount). */
+export function useDeleteTransfer() {
+  return useDataMutation(
+    async (id) => {
+      const { error } = await db.from("account_transfers").delete().eq("id", id);
+      if (error) throw error;
+    },
+    { onSuccess: () => invalidateQueries(["account_transfers"]) },
+  );
+}
+
 /**
  * Balance per account = opening balance + income on that method - expenses on
  * that method + transfers in - transfers out. Computed client-side from data
