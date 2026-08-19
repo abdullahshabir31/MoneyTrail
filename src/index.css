@@ -186,3 +186,35 @@
 .dark input[type="time"]::-webkit-calendar-picker-indicator {
   filter: invert(1) brightness(1.6);
 }
+
+/* Themed scrollbars, applied app-wide.
+   Replaces every browser's bulky default scrollbar (grey/white box that
+   ignores the app's theme) with a slim, rounded thumb built from the same
+   design tokens as the rest of the UI — so it automatically matches light
+   mode, dark mode, and every scroll area in the app: the page itself, the
+   sidebar nav, dialogs (AddTransactionDialog, opening-balance dialog...),
+   dropdown/select menus, the command palette, and scrollable tables. */
+html {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-border) transparent;
+}
+
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+*::-webkit-scrollbar-corner {
+  background: transparent;
+}
+*::-webkit-scrollbar-thumb {
+  background-color: var(--color-border);
+  border-radius: var(--radius-xl);
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+*::-webkit-scrollbar-thumb:hover {
+  background-color: var(--color-muted-foreground);
+}

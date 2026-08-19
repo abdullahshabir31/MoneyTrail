@@ -91,7 +91,7 @@ export default function RecurringPage() {
     <div className="space-y-5">
       <PageHeader
         title="Recurring"
-        subtitle="Subscriptions, rent, bills and anything that repeats"
+        subtitle="Subscriptions, rent, bills and anything that repeats. Logged automatically on their date — or tap Log early anytime to add one yourself sooner."
       />
 
       <div className="surface space-y-3 p-4">
@@ -240,7 +240,7 @@ export default function RecurringPage() {
               </div>
               <div className="mt-3 flex items-center gap-2">
                 <Button size="sm" variant="outline" onClick={() => logNow(r)}>
-                  <Check className="size-3.5" /> Log now
+                  <Check className="size-3.5" /> Log early
                 </Button>
                 <div className="ml-auto flex items-center gap-2">
                   <Switch
