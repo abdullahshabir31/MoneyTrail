@@ -264,6 +264,8 @@ export default function AuthPage() {
                 value={resetEmail}
                 onChange={setResetEmail}
                 type="email"
+                name="email"
+                autoComplete="email"
               />
             </div>
             <Button className="mt-5 h-12 w-full" onClick={sendResetLink} disabled={resetLoading}>
@@ -310,13 +312,23 @@ export default function AuthPage() {
               </TabsList>
 
               <TabsContent value="signin" className="mt-5 space-y-4">
-                <Field id="in-email" label="Email" value={email} onChange={setEmail} type="email" />
+                <Field
+                  id="in-email"
+                  label="Email"
+                  value={email}
+                  onChange={setEmail}
+                  type="email"
+                  name="email"
+                  autoComplete="email"
+                />
                 <Field
                   id="in-password"
                   label="Password"
                   value={password}
                   onChange={setPassword}
                   type="password"
+                  name="password"
+                  autoComplete="current-password"
                 />
                 <div className="flex items-center gap-2">
                   <Checkbox
@@ -341,14 +353,31 @@ export default function AuthPage() {
               </TabsContent>
 
               <TabsContent value="signup" className="mt-5 space-y-4">
-                <Field id="up-name" label="Name" value={name} onChange={setName} />
-                <Field id="up-email" label="Email" value={email} onChange={setEmail} type="email" />
+                <Field
+                  id="up-name"
+                  label="Name"
+                  value={name}
+                  onChange={setName}
+                  name="name"
+                  autoComplete="name"
+                />
+                <Field
+                  id="up-email"
+                  label="Email"
+                  value={email}
+                  onChange={setEmail}
+                  type="email"
+                  name="email"
+                  autoComplete="email"
+                />
                 <Field
                   id="up-password"
                   label="Password"
                   value={password}
                   onChange={setPassword}
                   type="password"
+                  name="new-password"
+                  autoComplete="new-password"
                 />
                 <Field
                   id="up-confirm-password"
@@ -356,6 +385,8 @@ export default function AuthPage() {
                   value={confirmPassword}
                   onChange={setConfirmPassword}
                   type="password"
+                  name="confirm-password"
+                  autoComplete="new-password"
                 />
                 <Button className="h-12 w-full" onClick={signUp} disabled={loading}>
                   Create account <ArrowRight className="size-4" />
@@ -382,7 +413,7 @@ export default function AuthPage() {
   );
 }
 
-function Field({ id, label, value, onChange, type = "text" }) {
+function Field({ id, label, value, onChange, type = "text", name, autoComplete }) {
   return (
     <div className="grid gap-2">
       <Label htmlFor={id}>{label}</Label>
@@ -392,6 +423,11 @@ function Field({ id, label, value, onChange, type = "text" }) {
         value={value}
         onChange={(e) => onChange(e.target.value)}
         className="h-12"
+        // `name` + `autoComplete` are what tell the browser/password manager
+        // what each field is for — without them Chrome won't reliably offer
+        // autofill or "Suggest strong password" on the signup password field.
+        name={name}
+        autoComplete={autoComplete}
       />
     </div>
   );

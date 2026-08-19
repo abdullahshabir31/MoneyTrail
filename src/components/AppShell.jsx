@@ -54,7 +54,7 @@ export function AppShell({ children }) {
             <p className="text-xs text-muted-foreground">Personal finance</p>
           </div>
         </div>
-        <nav className="flex flex-1 flex-col gap-1">
+        <nav className="flex flex-1 min-h-0 flex-col gap-1 overflow-y-auto">
           {NAV.map((item) => (
             <Link
               key={item.to}

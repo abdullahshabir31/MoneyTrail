@@ -137,6 +137,8 @@ export default function ResetPasswordPage() {
                   className="h-12"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
+                  name="new-password"
+                  autoComplete="new-password"
                 />
               </div>
               <div className="grid gap-2">
@@ -147,6 +149,8 @@ export default function ResetPasswordPage() {
                   className="h-12"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
+                  name="confirm-new-password"
+                  autoComplete="new-password"
                 />
               </div>
             </div>
